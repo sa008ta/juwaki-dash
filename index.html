@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta property="og:type" content="website">
-<meta property="og:title" content="受話器ダッシュ">
-<meta property="og:description" content="仕事をこなして、電話は誰より速く取れ。出世街道は電話から">
+<meta property="og:title" content="出世街道は電話番から">
+<meta property="og:description" content="電話が鳴った瞬間、誰よりも早く受話器を取れ">
 <meta property="og:image" content="https://sa008ta.github.io/juwaki-dash/cover.png">
 <meta property="og:url" content="https://sa008ta.github.io/juwaki-dash/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="受話器ダッシュ">
-<meta name="twitter:description" content="仕事をこなして、電話は誰より速く取れ。出世街道は電話から">
+<meta name="twitter:title" content="出世街道は電話番から">
+<meta name="twitter:description" content="電話が鳴った瞬間、誰よりも早く受話器を取れ">
 <meta name="twitter:image" content="https://sa008ta.github.io/juwaki-dash/cover.png">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>受話器ダッシュ</title>
+<title>出世街道は電話番から</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body { width:100%; height:100%; overflow:hidden; background:#20242c; font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif; touch-action:none; user-select:none; -webkit-user-select:none; }
@@ -22,7 +22,7 @@
   .hidden { display:none !important; }
   .card { background:rgba(255,253,246,.97); border-radius:22px; padding:22px 20px 18px; width:100%; max-width:400px; box-shadow:0 14px 44px rgba(0,0,0,.45); text-align:center; max-height:calc(100dvh - 24px); overflow-y:auto; }
   .hero { background:linear-gradient(135deg,#2b3a55,#16233c); border-radius:16px; padding:20px 10px 16px; margin:-6px -6px 14px; color:#fff; position:relative; overflow:hidden; }
-  .hero h1 { font-size:33px; font-weight:900; letter-spacing:1px; }
+  .hero h1 { font-size:29px; font-weight:900; letter-spacing:1px; }
   .hero h1 .gold { color:#ffb703; }
   .hero .sub { font-size:12.5px; font-weight:700; opacity:.85; margin-top:5px; }
   .btn { display:block; width:100%; border:none; border-radius:14px; padding:14px; font-size:16.5px; font-weight:900; cursor:pointer; margin:7px 0; font-family:inherit; }
@@ -66,11 +66,19 @@
   #flash { position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:12; }
   #bubble { position:fixed; z-index:10; background:#fff; border-radius:14px; padding:8px 15px; font-weight:900; font-size:17px; color:#26331f; box-shadow:0 6px 20px rgba(0,0,0,.35); transform:translate(-50%,-118%) scale(.5); opacity:0; transition:all .18s ease; pointer-events:none; white-space:nowrap; }
   #bubble.show { opacity:1; transform:translate(-50%,-118%) scale(1); }
+  #bubble.sideL, #bubble.sideR { transform:translate(0,-50%) scale(.5); }
+  #bubble.sideL.show, #bubble.sideR.show { transform:translate(0,-50%) scale(1); }
+  #bubble.sideL::after { left:-7px; right:auto; top:50%; bottom:auto; transform:translateY(-50%); border:8px solid transparent; border-right-color:#fff; border-left:0; }
+  #bubble.sideR::after { left:auto; right:-7px; top:50%; bottom:auto; transform:translateY(-50%); border:8px solid transparent; border-left-color:#fff; border-right:0; }
   #bubble::after { content:''; position:absolute; left:50%; bottom:-7px; transform:translateX(-50%); border:8px solid transparent; border-top-color:#fff; border-bottom:0; }
-  #bossBubble { position:fixed; z-index:10; top:16%; left:50%; background:#3a0d0d; color:#ffb3b3; border-radius:14px; padding:10px 18px; font-weight:900; font-size:18px; box-shadow:0 8px 26px rgba(0,0,0,.5); transform:translate(-50%,0) scale(.5); opacity:0; transition:all .18s ease; pointer-events:none; white-space:nowrap; }
-  #bossBubble.show { opacity:1; transform:translate(-50%,0) scale(1); }
-  #bossBubble::after { content:''; position:absolute; left:50%; bottom:-7px; transform:translateX(-50%); border:8px solid transparent; border-top-color:#3a0d0d; border-bottom:0; }
+  #praiseBubble { position:fixed; z-index:10; background:#fff7d6; border-radius:14px; padding:8px 15px; font-weight:900; font-size:16px; color:#5c4a00; box-shadow:0 6px 20px rgba(0,0,0,.35); transform:translate(-50%,-118%) scale(.5); opacity:0; transition:all .18s ease; pointer-events:none; white-space:nowrap; }
+  #praiseBubble.show { opacity:1; transform:translate(-50%,-118%) scale(1); }
+  #praiseBubble::after { content:''; position:absolute; left:50%; bottom:-7px; transform:translateX(-50%); border:8px solid transparent; border-top-color:#fff7d6; border-bottom:0; }
+  #scoldBubble { position:fixed; z-index:10; top:17%; right:18px; max-width:calc(100vw - 48px); background:#fff; color:#d42a2a; border-radius:14px; padding:10px 16px; font-weight:900; font-size:18px; line-height:1.35; box-shadow:0 8px 26px rgba(0,0,0,.4); transform:translateX(18px) scale(.6); opacity:0; transition:all .18s ease; pointer-events:none; }
+  #scoldBubble.show { opacity:1; transform:translateX(0) scale(1); }
+  #scoldBubble::after { content:''; position:absolute; right:-7px; top:50%; transform:translateY(-50%); border:8px solid transparent; border-left-color:#fff; border-right:0; }
   .bigScore { font-size:30px; font-weight:900; color:#26331f; margin:4px 0; }
+  #resMyMs { display:block; }
   .msWin { color:#1d9e4b; } .msLose { color:#d64545; }
   .ladderRow { display:flex; justify-content:space-between; padding:6px 4px; font-size:13.5px; font-weight:800; color:#5a6e4c; border-bottom:1px dashed #dde4cd; }
   .ladderRow.done { color:#1d9e4b; } .ladderRow.now { color:#b45309; }
@@ -88,10 +96,11 @@
 </div>
 <button id="quitBtn" class="hidden">やめる</button>
 <div id="ringBanner" class="hidden">📞 電話だ！取れ！</div>
-<div id="scoldBanner" class="hidden" style="position:fixed;top:26%;left:50%;transform:translateX(-50%);z-index:11;background:#3a0d0d;color:#ffb3b3;font-size:21px;font-weight:900;border-radius:16px;padding:14px 22px;box-shadow:0 10px 34px rgba(0,0,0,.5);white-space:nowrap">💢 上司「サボるな！仕事しろ！」</div>
 <button id="grabBtn" class="hidden" aria-label="受話器を取る"></button>
+<button id="phoneHit" class="hidden" aria-label="電話" style="position:fixed;z-index:9;background:transparent;border:none;cursor:pointer;padding:0"></button>
 <div id="bubble">もしもし</div>
-<div id="bossBubble">電話も取れないのか！</div>
+<div id="praiseBubble"></div>
+<div id="scoldBubble">電話も取れないのか！</div>
 
 <div id="taskCard" class="hidden">
   <div style="height:6px;background:#e3e8d5;border-radius:3px;overflow:hidden;margin-bottom:8px"><div id="taskBar" style="height:100%;width:100%;background:#7fb069;border-radius:3px"></div></div>
@@ -101,7 +110,7 @@
 
 <div id="screenTitle" class="screen">
   <div class="card">
-    <div class="hero"><h1>受話器<span class="gold">ダッシュ</span></h1><div class="sub">出世街道は電話から</div></div>
+    <div class="hero"><h1>出世街道は<span class="gold">電話番から</span></h1><div class="sub">電話が鳴った瞬間、誰よりも早く受話器を取れ</div></div>
     <div class="lbl">👤 ユーザーネーム</div>
     <div class="nameRow" style="margin-bottom:4px"><div id="nameTitle" style="background:#2b3a55;color:#ffb703;font-weight:900;font-size:13.5px;border-radius:12px;padding:8px 0;text-align:center;margin-bottom:6px">新人</div><input id="nameIn" maxlength="10" placeholder="ユーザーネーム" style="width:100%;padding:11px 13px;border:2px solid #d8dfc8;border-radius:12px;font-size:15px;font-weight:800;font-family:inherit;background:#fff"></div>
     <button class="btn main" id="startBtn">スタート</button>
@@ -135,12 +144,14 @@
 <div id="screenResult" class="screen hidden">
   <div class="card">
     <div style="font-size:40px" id="resEmoji">🏆</div>
+    <div id="resPromo" style="display:none;font-size:15px;font-weight:900;color:#7a5410;background:linear-gradient(90deg,#ffe9a8,#ffd94d);border-radius:999px;padding:8px 10px;margin:2px 0 10px;white-space:nowrap"></div>
     <h2 id="resTitle">勝ち！</h2>
     <div class="bigScore"><span id="resMyMs"></span> <span id="resVs" style="font-size:16px;color:#77875f">vs</span> <span id="resRivalMs"></span></div>
-    <div id="resComment" style="font-size:14px;font-weight:900;color:#b3543f;margin:2px 0 4px"></div>
+    <div id="resComment" style="font-size:17px;font-weight:900;color:#b3543f;margin:3px 0 6px"></div>
     <div id="resWork" style="font-size:13.5px;font-weight:800;color:#77875f;margin-bottom:6px"></div>
     <button class="btn main" id="resNextBtn">次へ</button>
     <button class="btn sub" id="resTitleBtn">タイトルへ</button>
+    <a class="btn sub" id="resShareBtn" href="#" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">𝕏 でシェア</a>
   </div>
 </div>
 
@@ -198,7 +209,7 @@ const STAGES = [
   { name: '課長のサトウ', face: '👨‍💼', ms: 440, desc: '周りの部下も巻き込んで一斉に鳴る。速い。' },
   { name: '部長のヤマダ', face: '👴', ms: 350, desc: '若い頃は電話番で名を馳せた男。かなり速い。' },
   { name: '社長のオオタ', face: '🤴', ms: 270, desc: '伝説の電話番。鳴る前に手が動くという噂。' },
-  { name: 'アレクサンダー・グラハム・ベル', face: '👨‍🔬', ms: 195, desc: '' },
+  { name: 'アレクサンダー・グラハム・ベル', face: '🧔', ms: 195, desc: '' },
 ];
 function racersFor(stage) {
   if (stage < 2) return [{ side: 'left', st: STAGES[stage] }];
@@ -235,10 +246,9 @@ function taskMistake(msg) {
   if (G.taskTimer) { clearTimeout(G.taskTimer); clearInterval(G.taskTimer); G.taskTimer = null; }
   $('taskCard').classList.add('hidden');
   sfx.bad();
-  $('scoldBanner').textContent = '💢 上司「ミスするな！しっかりしろ！」';
-  $('scoldBanner').classList.remove('hidden');
+  showScoldBubble('ミスするな！しっかりしろ！');
   document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake');
-  setTimeout(() => { $('scoldBanner').classList.add('hidden'); failByScold('mistake'); }, 1000);
+  setTimeout(() => { failByScold('mistake'); }, 1500);
 }
 const TASK_DEFS = [
   { title: '💻 キーボード入力：表示された数字を打て', make(body, done) {
@@ -346,8 +356,9 @@ const TASK_DEFS = [
       ];
       const set = sets[Math.floor(Math.random() * sets.length)];
       const cap = document.createElement('div'); cap.style.cssText = 'font-size:19px;font-weight:900'; cap.textContent = '「' + set.t + '」はどれ？';
-      const grid = document.createElement('div'); grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%';
-      for (const w of [set.t, ...set.d].sort(() => Math.random() - 0.5)) {
+      const grid = document.createElement('div'); grid.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%';
+      const picks = [...set.d].sort(() => Math.random() - 0.5).slice(0, 3);
+      for (const w of [set.t, ...picks].sort(() => Math.random() - 0.5)) {
         const btn = document.createElement('button'); btn.textContent = w; btn.style.cssText = 'background:#eef1e4;color:#26331f;font-size:16px;padding:11px 0;border-radius:10px';
         btn.onclick = () => { if (w === set.t) { sfx.type(); done(); } else taskMistake('漢字を間違えた'); };
         grid.appendChild(btn);
@@ -356,14 +367,14 @@ const TASK_DEFS = [
   } },
   { title: '✉️ メール返信：合う返事を選べ', make(body, done) {
       const S = [
-        { from: '同僚', msg: 'おはようございます！', ok: 'おはようございます', ng: ['お疲れ様です', 'いただきます'] },
-        { from: '同僚', msg: 'お先に失礼します', ok: 'お疲れ様でした', ng: ['おはようございます', 'ごちそうさまでした'] },
-        { from: '部長', msg: '資料、送っておいたよ', ok: 'ありがとうございます。確認いたします', ng: ['了解です！', 'OKです'] },
-        { from: '部長', msg: '明日の会議は10時からに変更だ', ok: '承知しました', ng: ['了解です', 'わかった'] },
-        { from: '先輩', msg: 'この前は助かったよ、ありがとう', ok: 'こちらこそありがとうございました', ng: ['すみません', 'おはようございます'] },
-        { from: '取引先', msg: 'お世話になっております', ok: 'こちらこそお世話になっております', ng: ['お疲れ様です', 'ご苦労様です'] },
-        { from: '同僚', msg: '申し訳ない、遅れそう…', ok: 'とんでもないです。お気をつけて', ng: ['許しません', 'いただきます'] },
-        { from: '新入社員', msg: '初めまして！よろしくお願いします', ok: '初めまして、よろしくお願いいたします', ng: ['どうもー', 'お世話様です'] },
+        { from: '同僚', msg: 'おはようございます！', ok: 'おはようございます', ng: ['いただきます', 'ごちそうさま'] },
+        { from: '同僚', msg: 'お先に失礼します', ok: 'お疲れ様でした', ng: ['ただいま', 'いただきます'] },
+        { from: '部長', msg: '資料、送っておいたよ', ok: '確認します', ng: ['出張に行きます', '有給を取ります'] },
+        { from: '部長', msg: '明日の会議は10時からに変更だ', ok: '10時に行きます', ng: ['印刷しておきます', '掃除しておきます'] },
+        { from: '先輩', msg: 'この前は助かったよ、ありがとう', ok: 'とんでもないです', ng: ['いただきます', 'おはようございます'] },
+        { from: '取引先', msg: 'お世話になっております', ok: 'お世話になっております', ng: ['ごちそうさま', 'ただいま'] },
+        { from: '同僚', msg: '申し訳ない、遅れそう…', ok: '待ってます', ng: ['印刷しておきます', '出張に行きます'] },
+        { from: '新入社員', msg: '初めまして！よろしくお願いします', ok: 'よろしくお願いします', ng: ['いただきます', 'おかえりなさい'] },
       ];
       const s = S[Math.floor(Math.random() * S.length)];
       const mail = document.createElement('div'); mail.style.cssText = 'background:#fff;border:2.5px solid #7fb0e6;border-radius:14px;padding:12px 14px;color:#22354d;width:100%;text-align:left;box-shadow:0 3px 10px rgba(58,134,255,.15)';
@@ -377,21 +388,46 @@ const TASK_DEFS = [
       }
       body.append(mail, lbl, row);
   } },
+  { title: '📄 資料作成：連打で仕上げろ', make(body, done) {
+      let pct = 0, finished = false;
+      const paper = document.createElement('div'); paper.style.cssText = 'background:#fff;border:2.5px solid #c9cfd8;border-radius:10px;width:100%;padding:10px 12px;text-align:left;box-shadow:0 3px 8px rgba(0,0,0,.08)';
+      const lines = document.createElement('div'); lines.style.cssText = 'display:flex;flex-direction:column;gap:6px;min-height:64px;justify-content:flex-start';
+      const pctLbl = document.createElement('div'); pctLbl.style.cssText = 'font-size:19px;font-weight:900;color:#22354d;margin-top:8px'; pctLbl.textContent = '作成中… 0%';
+      paper.append(lines, pctLbl);
+      const barWrap = document.createElement('div'); barWrap.style.cssText = 'width:100%;height:12px;background:#e4e8da;border-radius:99px;overflow:hidden';
+      const bar = document.createElement('div'); bar.style.cssText = 'height:100%;width:0%;background:#3a86ff;border-radius:99px;transition:width .05s';
+      barWrap.appendChild(bar);
+      const btn = document.createElement('button'); btn.textContent = '✍️ 書く！'; btn.style.cssText = 'background:#3a86ff;color:#fff;font-size:19px;font-weight:900;padding:14px 0;border-radius:12px;width:100%;touch-action:manipulation;user-select:none;-webkit-user-select:none';
+      const upd = () => {
+        bar.style.width = pct + '%'; pctLbl.textContent = pct >= 100 ? '完成！' : '作成中… ' + pct + '%';
+        const n = Math.floor(pct / 20);
+        while (lines.children.length < n) { const l = document.createElement('div'); l.style.cssText = 'height:9px;border-radius:99px;background:#b9c4d6;width:' + (62 + Math.random() * 34) + '%'; lines.appendChild(l); }
+      };
+      btn.addEventListener('pointerdown', e => { e.preventDefault(); if (finished) return; pct = Math.min(100, pct + 5); sfx.type(); upd(); if (pct >= 100) { finished = true; done(); } });
+      upd();
+      body.append(paper, barWrap, btn);
+  } },
 ];
 let taskSeq = 0;
+let lastTaskIdx = -1;
+function taskPt() { return 10 + G.stage * 5; }
 function nextTask() {
   if (G.phase !== 'work') return;
   G.taskActive = true; G.taskStart = performance.now();
-  const def = TASK_DEFS[Math.floor(Math.random() * TASK_DEFS.length)];
+  let idx = Math.floor(Math.random() * TASK_DEFS.length);
+  while (idx === lastTaskIdx) idx = Math.floor(Math.random() * TASK_DEFS.length);
+  lastTaskIdx = idx;
+  const def = TASK_DEFS[idx];
   $('taskTitle').textContent = def.title;
   const body = $('taskBody'); body.innerHTML = '';
   const mySeq = ++taskSeq;
   def.make(body, () => {
     if (G.phase !== 'work' || mySeq !== taskSeq) return;
     G.taskActive = false;
-    G.workPt += 10; G.runWorkPt += 10; $('workPt').textContent = G.workPt; store.set('phone_workpt', G.workPt);
+    const pt = taskPt();
+    G.workPt += pt; G.runWorkPt += pt; $('workPt').textContent = G.workPt; store.set('phone_workpt', G.workPt);
     sfx.ok();
-    body.innerHTML = '<div style="font-size:26px;font-weight:900;color:#1d9e4b">✓ 完了 +10pt</div>';
+    body.innerHTML = '<div style="font-size:26px;font-weight:900;color:#1d9e4b">✓ 完了 +' + pt + 'pt</div>';
     taskSeq++;
     G.taskTimer = setTimeout(nextTask, 300);
   });
@@ -403,29 +439,37 @@ function scold() {
   G.taskActive = false; G.scolds++;
   G.workPt = Math.max(0, G.workPt - 20); G.runWorkPt -= 20; $('workPt').textContent = G.workPt; store.set('phone_workpt', G.workPt);
   sfx.bad(); tone(120, 0.15, 0.3, 'sawtooth', 0.07);
-  $('scoldBanner').textContent = '💢 上司「サボるな！仕事しろ！」';
-  $('scoldBanner').classList.remove('hidden');
+  showScoldBubble('サボるな！仕事しろ！');
   const sc = $('scene'); sc.style.transition = 'transform .05s'; let n = 0;
   const sh = setInterval(() => { sc.style.transform = 'translate(' + (Math.random() * 10 - 5) + 'px,' + (Math.random() * 6 - 3) + 'px)'; if (++n > 7) { clearInterval(sh); sc.style.transform = ''; } }, 50);
-  setTimeout(() => $('scoldBanner').classList.add('hidden'), 1300);
   updScoldInfo();
   if (G.scolds >= 1) { failByScold(); return; }
   taskSeq++;
   G.taskTimer = setTimeout(nextTask, 500);
 }
+function showPromoIfAny() {
+  const now = titleFor(G.workPt).name;
+  if (G.titleBefore && now !== G.titleBefore) {
+    $('resPromo').textContent = '🎉 称号昇格！『' + now + '』';
+    $('resPromo').style.display = '';
+  } else $('resPromo').style.display = 'none';
+}
 function failByScold(reason) {
   if (G.ringTO) clearTimeout(G.ringTO); if (G.taskTimer) clearTimeout(G.taskTimer);
   G.phase = 'done'; ringStop();
-  $('taskCard').classList.add('hidden'); $('ringBanner').classList.add('hidden'); $('grabBtn').classList.add('hidden');
+  $('taskCard').classList.add('hidden'); $('ringBanner').classList.add('hidden'); $('grabBtn').classList.add('hidden'); $('phoneHit').classList.add('hidden');
   sfx.lose();
   $('resEmoji').textContent = '💢';
-  $('resTitle').textContent = reason === 'mistake' ? 'ミスして失敗…' : 'サボって失敗…';
-  $('resMyMs').innerHTML = reason === 'mistake' ? (G.failMsg || 'タスクの答えをミスった') : 'タスクを1個サボった';
+  $('resTitle').textContent = reason === 'mistake' ? 'ミスして失敗…' : reason === 'phone' ? '鳴ってない電話を取って失敗…' : 'サボって失敗…';
+  $('resComment').textContent = '';
+  $('resMyMs').innerHTML = reason === 'mistake' ? (G.failMsg || 'タスクの答えをミスった') : reason === 'phone' ? '電話は鳴っていなかった' : 'タスクを1個サボった';
   $('resRivalMs').innerHTML = ''; $('resVs').style.display = 'none';
   $('resWork').textContent = '仕事は制限時間内に終わらせよう（この回の仕事ポイント ' + G.runWorkPt + 'pt）';
   $('resNextBtn').textContent = 'もう一度挑戦';
+  setShare(reason === 'mistake' ? '📞 『出世街道は電話番から』 ' + (G.failMsg || 'タスクをミスった') + '… 電話を取る前に仕事で失敗' : reason === 'phone' ? '📞 『出世街道は電話番から』 鳴っていない電話を取って怒られた…' : '📞 『出世街道は電話番から』 仕事をサボって怒られた…');
   submitScore();
-  showResultDelayed(1100);
+  showPromoIfAny();
+  showResultDelayed(reason === 'phone' ? 2100 : 1100);
 }
 const LOSE_COMMENTS = [
   ['同期に先を越された…', 'タナカ、今日はやる気だ', '同期の背中が遠い…'],
@@ -444,6 +488,33 @@ function pickLoseComment(winnerName) {
   if (G.runWorkPt <= 30) pool = pool.concat(LOSE_LOW);
   if (G.runWorkPt >= 150) pool = pool.concat(LOSE_HIGH);
   return pool[Math.floor(Math.random() * pool.length)];
+}
+const WIN_PRAISE = [
+  ['いい速さだ…！', '参った、完敗だ', 'その反射神経、どこで鍛えたんだ'],
+  ['いい速さだね', '後輩に抜かれるとは…成長したな', '見事。先輩の面目、丸つぶれだ'],
+  ['いい速さだ', 'うむ、その調子で頼むよ', '我が課の誇りだ'],
+  ['いい速さだな', 'わしの若い頃を見ているようだ', '大したものだ'],
+  ['いい速さだ', '君のような人材を待っていた', '社長賞ものだな'],
+  ['もしもし、その速さは本物だ', '電話の未来は君に託そう', '私の発明が、君に届いたか'],
+];
+const WIN_PRAISE_GENERIC = ['いい速さだ…！', 'その手さばき、プロ級だ', '電話が鳴る前から手が動いていた…'];
+function pickWinPraise() {
+  const pool = [...(WIN_PRAISE[G.stage] || []), ...WIN_PRAISE_GENERIC];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+let praiseTO = null, praiseTimer = null;
+function showPraiseBubble() {
+  if (!window.R3D || !R3D.anchor) return;
+  const a = R3D.anchorHead ? R3D.anchorHead('left') : R3D.anchor('left');
+  const b = $('praiseBubble');
+  b.textContent = pickWinPraise();
+  const half = b.offsetWidth / 2;
+  const cx = Math.max(half + 8, Math.min(window.innerWidth - half - 8, a.nx * window.innerWidth));
+  b.style.left = cx + 'px';
+  b.style.top = (a.ny * window.innerHeight) + 'px';
+  b.classList.add('show');
+  if (praiseTO) clearTimeout(praiseTO);
+  praiseTO = setTimeout(() => b.classList.remove('show'), 1900);
 }
 /* ================= NAMES / NG ================= */
 const NG_WORDS = [
@@ -495,7 +566,7 @@ const RANK_ENT = { name: 'entry.728886591', pt: 'entry.952075242', pid: 'entry.1
 const RANK_SHEET = '1jS-j9LjovpVyDS14MEZ9NE6NaQD5n_M4coEYC7q15SA';
 function formPost(url, ent, vals) {
   const b = new URLSearchParams();
-  for (const k in ent) b.append('entry.' + ent[k], vals[k] == null ? '' : '' + vals[k]);
+  for (const k in ent) b.append(ent[k], vals[k] == null ? '' : '' + vals[k]);
   fetch(url, { method: 'POST', mode: 'no-cors', body: b }).catch(() => {});
 }
 function sheetLoad(id) {
@@ -555,11 +626,12 @@ function openStage() {
 }
 function beginWork() {
   showScreen(null);
-  G.phase = 'work'; G.runWorkPt = 0; G.scolds = 0; updScoldInfo(); G.myMs = null; G.rivalWon = null;
-  $('resComment').textContent = ''; $('bubble').classList.remove('show'); $('bossBubble').classList.remove('show'); G.meGrab = 0; G.leftGrab = 0; G.rightGrab = 0; G.result = null;
+  G.phase = 'work'; G.runWorkPt = 0; G.scolds = 0; updScoldInfo(); G.myMs = null; G.rivalWon = null; G.titleBefore = titleFor(G.workPt).name;
+  $('resComment').textContent = ''; $('bubble').classList.remove('show'); $('scoldBubble').classList.remove('show'); $('praiseBubble').classList.remove('show'); if (praiseTimer) clearTimeout(praiseTimer); G.meGrab = 0; G.leftGrab = 0; G.rightGrab = 0; G.result = null;
   G.racers = racersFor(G.stage).map(r => ({ ...r, ms: Math.max(120, r.st.ms + (Math.random() * 110 - 55)), grabbedAt: null }));
   $('stagePill').textContent = STAGES[G.stage].name + ' 戦';
   $('hud').classList.remove('hidden'); $('quitBtn').classList.remove('hidden'); $('taskCard').classList.remove('hidden');
+  positionPhoneHit(); $('phoneHit').classList.remove('hidden');
   taskSeq++; nextTask();
   const wait = 6000 + Math.random() * 7000;
   G.ringTO = setTimeout(fireRing, wait);
@@ -568,9 +640,19 @@ function fireRing() {
   if (G.phase !== 'work') return;
   G.phase = 'ring'; G.ringStart = performance.now();
   taskSeq++; if (G.taskTimer) clearTimeout(G.taskTimer);
-  $('taskCard').classList.add('hidden'); $('ringBanner').classList.remove('hidden');
+  $('phoneHit').classList.add('hidden');
+  $('ringBanner').classList.remove('hidden');
   positionGrab(); $('grabBtn').classList.remove('hidden');
   ringStart();
+}
+function positionPhoneHit() {
+  if (!window.R3D || !R3D.phoneScreen) return;
+  const p = R3D.phoneScreen();
+  const s = Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.34);
+  const b = $('phoneHit');
+  b.style.width = s + 'px'; b.style.height = s + 'px';
+  b.style.left = (p.nx * window.innerWidth - s / 2) + 'px';
+  b.style.top = (p.ny * window.innerHeight - s / 2) + 'px';
 }
 function positionGrab() {
   if (!window.R3D || !R3D.phoneScreen) return;
@@ -591,34 +673,65 @@ function armResultLock() {
 }
 function resultLocked() { return performance.now() - G.resultAt < 1000; }
 let bubbleTO = null;
-function showBubble(who) {
+function showBubble(who, dur) {
   if (!window.R3D || !R3D.anchor) return;
-  const a = R3D.anchor(who);
   const b = $('bubble');
-  b.style.left = (a.nx * window.innerWidth) + 'px';
-  b.style.top = (a.ny * window.innerHeight) + 'px';
+  b.classList.remove('sideL', 'sideR');
+  if (who !== 'me' && R3D.anchorHead) {
+    const a = R3D.anchorHead(who);
+    const hx = a.nx * window.innerWidth, hy = a.ny * window.innerHeight;
+    const w = b.offsetWidth;
+    const dir = who === 'left' ? 1 : -1;
+    let left = hx + dir * 30 + (dir > 0 ? 0 : -w);
+    left = Math.max(8, Math.min(window.innerWidth - w - 8, left));
+    b.style.left = left + 'px';
+    b.style.top = hy + 'px';
+    b.classList.add(dir > 0 ? 'sideL' : 'sideR');
+  } else {
+    const a = R3D.anchor(who);
+    const half = b.offsetWidth / 2;
+    const cx = Math.max(half + 8, Math.min(window.innerWidth - half - 8, a.nx * window.innerWidth));
+    b.style.left = cx + 'px';
+    b.style.top = (a.ny * window.innerHeight) + 'px';
+  }
   b.classList.add('show');
   if (bubbleTO) clearTimeout(bubbleTO);
-  bubbleTO = setTimeout(() => b.classList.remove('show'), 2100);
+  bubbleTO = setTimeout(() => b.classList.remove('show'), dur || 2100);
 }
 const BOSS_LINES = ['電話も取れないのか！', '何のための電話番だ！', '次は必ず取るんだぞ！', '今の電話、大事な取引先だったぞ…'];
 let bossTO = null;
-function showBossBubble() {
-  const b = $('bossBubble');
-  b.textContent = '💢 ' + BOSS_LINES[Math.floor(Math.random() * BOSS_LINES.length)];
+function showBossLine(text) {
+  const b = $('scoldBubble');
+  b.textContent = text;
   b.classList.add('show');
-  sfx.bad();
   if (bossTO) clearTimeout(bossTO);
-  bossTO = setTimeout(() => b.classList.remove('show'), 2000);
+  bossTO = setTimeout(() => b.classList.remove('show'), 2200);
+}
+function scolderTag() {
+  if (G.stage <= 1) return '課長';
+  if (G.stage === 2) return '部長';
+  return '社長';
+}
+function showBossBubble() {
+  showBossLine('💢 ' + scolderTag() + '「' + BOSS_LINES[Math.floor(Math.random() * BOSS_LINES.length)] + '」');
+  sfx.bad();
+}
+function showScoldBubble(line) {
+  showBossLine('💢 ' + scolderTag() + '「' + line + '」');
+}
+function setShare(text) {
+  $('resShareBtn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text + '\n#出世街道は電話番から #ブラウザゲーム #インディーゲーム\nhttps://sa008ta.github.io/juwaki-dash/');
 }
 function resolve(win, myMs) {
   if (G.phase === 'done') return;
   G.phase = 'done'; ringStop();
-  $('ringBanner').classList.add('hidden'); $('grabBtn').classList.add('hidden'); $('taskCard').classList.add('hidden');
+  $('ringBanner').classList.add('hidden'); $('grabBtn').classList.add('hidden'); $('phoneHit').classList.add('hidden');
   const fastest = Math.min(...G.racers.map(r => r.ms));
-  if (win) { sfx.pickup(); setTimeout(() => sfx.win(), 120); showBubble('me'); } else sfx.lose();
+  if (win) { sfx.pickup(); setTimeout(() => sfx.win(), 120); showBubble('me'); if (praiseTimer) clearTimeout(praiseTimer); praiseTimer = setTimeout(showPraiseBubble, 1300); } else sfx.lose();
   if (win && G.stage >= store.get('phone_progress', 0)) store.set('phone_progress', Math.min(STAGES.length, G.stage + 1));
   if (win && myMs != null && (!G.bestMs || myMs < G.bestMs)) { G.bestMs = Math.round(myMs); store.set('phone_bestms', G.bestMs); }
+  let bonusApplied = false;
+  if (win && G.runWorkPt > 0) { G.workPt += G.runWorkPt; G.runWorkPt *= 2; bonusApplied = true; store.set('phone_workpt', G.workPt); }
   submitScore();
   $('resVs').style.display = '';
   const lastStage = G.stage >= STAGES.length - 1;
@@ -628,16 +741,21 @@ function resolve(win, myMs) {
     $('resTitle').textContent = lastStage ? '全制覇！電話の発明者超え！' : '勝ち！ ' + STAGES[G.stage].name + ' 制覇';
     $('resMyMs').innerHTML = 'あなた <span class="msWin">' + (myMs / 1000).toFixed(3) + '秒</span>';
     $('resRivalMs').innerHTML = '相手 <span>' + (fastest / 1000).toFixed(3) + '秒</span>';
+    setShare('📞 『出世街道は電話番から』 ' + STAGES[G.stage].name + 'に勝った！ 受話器まで ' + (myMs / 1000).toFixed(3) + '秒');
   } else {
     const w = G.rivalWon || { name: STAGES[G.stage].name, ms: fastest };
+    $('resComment').style.color = '#b3543f';
     $('resComment').textContent = pickLoseComment(w.name);
     $('resTitle').textContent = w.name + 'に取られた';
     $('resMyMs').innerHTML = w.name + ' <span class="msLose">' + (w.ms / 1000).toFixed(3) + '秒</span>';
     $('resRivalMs').innerHTML = 'あなた <span>' + (myMs != null ? (myMs / 1000).toFixed(3) + '秒（' + (Math.abs(myMs - w.ms) / 1000).toFixed(3) + '秒差）' : '反応なし') + '</span>';
+    setShare('📞 『出世街道は電話番から』 ' + w.name + 'に取られた… 受話器まで ' + (myMs != null ? (myMs / 1000).toFixed(3) + '秒。あと ' + (Math.abs(myMs - w.ms) / 1000).toFixed(3) + '秒だった' : '反応できなかった'));
   }
-  $('resWork').textContent = 'この回の仕事ポイント +' + G.runWorkPt + 'pt（累計 ' + G.workPt + 'pt）';
+  $('resWork').textContent = 'この回の仕事ポイント +' + G.runWorkPt + 'pt' + (bonusApplied ? '（📞成功ボーナス2倍！）' : '') + '（累計 ' + G.workPt + 'pt）';
   $('resNextBtn').textContent = win ? (lastStage ? 'タイトルへ' : STAGES[G.stage + 1].name + 'と対戦') : 'もう一度挑戦';
-  showResultDelayed(1750);
+  if (!win && G.rivalWon && G.rivalWon.side) showBubble(G.rivalWon.side, 2500);
+  showPromoIfAny();
+  showResultDelayed(win ? 3300 : 2300);
 }
 function onGrab() {
   if (G.phase !== 'ring') return;
@@ -664,9 +782,9 @@ function tick(now) {
       if (el >= r.ms && !r.grabbedAt) {
         r.grabbedAt = now; G.grabAnim = { who: r.side, t0: now };
         if (!G.rivalWon) {
-          G.rivalWon = { name: r.st.name, ms: r.ms };
+          G.rivalWon = { name: r.st.name, ms: r.ms, side: r.side };
           showBubble(r.side);
-          setTimeout(showBossBubble, 550);
+          setTimeout(showBossBubble, 1000);
           ringStop(); $('ringBanner').classList.add('hidden');
           G.loseAt = now + 1200;
         }
@@ -689,7 +807,15 @@ function tick(now) {
 }
 requestAnimationFrame(tick);
 $('grabBtn').addEventListener('pointerdown', e => { e.preventDefault(); onGrab(); });
-window.addEventListener('resize', () => { if (G.phase === 'ring') positionGrab(); });
+$('phoneHit').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (G.phase !== 'work') return;
+  ac(); sfx.bad();
+  const LINES = ['電話は鳴っていない！仕事に集中したまえ！', '鳴ってもいない電話を取るな！仕事しろ！', '誰もかけてきてないぞ！仕事に集中！', '電話はまだだ！目の前の仕事を終わらせろ！', '今夜は残業確定だね', 'もしもしはまだ早い！仕事しろ！'];
+  showBossLine('💢 ' + scolderTag() + '「' + LINES[Math.floor(Math.random() * LINES.length)] + '」');
+  failByScold('phone');
+});
+window.addEventListener('resize', () => { if (G.phase === 'ring') positionGrab(); if (G.phase === 'work') positionPhoneHit(); });
 $('startBtn').onclick = () => { ac(); G.stage = Math.min(store.get('phone_progress', 0), STAGES.length - 1); openStage(); };
 $('stageGoBtn').onclick = () => { ac(); beginWork(); };
 $('stageBackBtn').onclick = () => { renderLadder(); showScreen('title'); };
@@ -857,7 +983,10 @@ function buildPerson(parent, x, z, suit, skin) {
   const suitMat = new THREE.MeshStandardMaterial({ color: suit, roughness: 0.9 });
   box(0.46, 0.62, 0.26, suitMat, 0, 1.08, 0.28, g); // torso (seated, leaning slightly)
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 14), new THREE.MeshStandardMaterial({ color: skin, roughness: 0.7 })); head.position.set(0, 1.56, 0.24); g.add(head);
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(0.145, 18, 12, 0, Math.PI * 2, 0, 1.4), new THREE.MeshStandardMaterial({ color: 0x2b2320 })); hair.position.set(0, 1.585, 0.245); g.add(hair);
+  const hairMat = new THREE.MeshStandardMaterial({ color: 0x2b2320 });
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(0.145, 18, 12, 0, Math.PI * 2, 0, 1.4), hairMat); hair.position.set(0, 1.585, 0.245); g.add(hair);
+  const beardMat = new THREE.MeshStandardMaterial({ color: 0xd9d9d9, roughness: 0.95 });
+  const beard = new THREE.Mesh(new THREE.SphereGeometry(0.148, 16, 12), beardMat); beard.scale.set(1.02, 1.3, 1.02); beard.position.set(0, 1.465, 0.24); beard.visible = false; g.add(beard);
   box(0.3, 0.5, 0.02, new THREE.MeshStandardMaterial({ color: 0xf2f0e6 }), 0, 1.12, 0.138, g); // shirt
   box(0.05, 0.18, 0.02, new THREE.MeshStandardMaterial({ color: 0xd64545 }), 0, 1.22, 0.15, g); // tie
   box(0.4, 0.1, 0.5, new THREE.MeshStandardMaterial({ color: 0x333a44 }), 0, 0.72, 0.3, g); // lap
@@ -872,7 +1001,7 @@ function buildPerson(parent, x, z, suit, skin) {
   box(0.09, 0.09, 0.42, suitMat, 0, -0.06, -0.16, armR);
   const handR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), new THREE.MeshStandardMaterial({ color: skin })); handR.position.set(0, -0.06, -0.38); armR.add(handR);
   const handL = handR.clone(); handL.position.set(0, -0.06, -0.38); armL.add(handL);
-  return { group: g, armL, armR, suitMat };
+  return { group: g, armL, armR, suitMat, head, hairMat, beard };
 }
 const SUITS = [0x3f7d7a, 0x35507a, 0x27364f, 0x5a4632, 0x1d1d22, 0x4a3520];
 const myDesk = buildDesk(scene, 0, 1.05, { mug: 0x3a86ff, phoneX: 0.36, phoneZ: 0.16 });
@@ -901,6 +1030,13 @@ function anchor(which) {
   const d = which === 'me' ? myDesk : which === 'left' ? leftDesk : rightDesk;
   const v = new THREE.Vector3();
   d.phone.group.getWorldPosition(v); v.y += 0.42;
+  v.project(camera);
+  return { nx: (v.x + 1) / 2, ny: (1 - v.y) / 2 };
+}
+function anchorHead(which) {
+  const p = which === 'left' ? leftPerson : rightPerson;
+  const v = new THREE.Vector3();
+  p.head.getWorldPosition(v); v.y += 0.30;
   v.project(camera);
   return { nx: (v.x + 1) / 2, ny: (1 - v.y) / 2 };
 }
@@ -941,6 +1077,8 @@ function frame(s) {
   if (s.stage !== lastStage || s.leftOn !== lastLeft || s.rightOn !== lastRight) {
     lastStage = s.stage; lastLeft = s.leftOn; lastRight = s.rightOn;
     leftPerson.suitMat.color.setHex(SUITS[s.stage]);
+    leftPerson.beard.visible = s.stage === 5;
+    leftPerson.hairMat.color.setHex(s.stage === 5 ? 0xd9d9d9 : 0x2b2320);
     plateL.material.map = plateTex(NAMES[s.stage]); plateL.material.needsUpdate = true;
     const rIdx = s.stage < 2 ? -1 : s.stage === 4 ? 3 : s.stage - 1;
     rightPerson.group.visible = rIdx >= 0; rightDesk.group.visible = rIdx >= 0; plateR.visible = rIdx >= 0;
@@ -968,7 +1106,7 @@ function frame(s) {
 }
 function resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); }
 addEventListener('resize', resize);
-window.R3D = { frame, phoneScreen, resize, anchor };
+window.R3D = { frame, phoneScreen, resize, anchor, anchorHead };
 renderer.render(scene, camera);
 </script>
 </body>
