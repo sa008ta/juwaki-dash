@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta property="og:type" content="website">
+<meta property="og:title" content="受話器ダッシュ">
+<meta property="og:description" content="仕事をこなして、電話は誰より速く取れ。出世街道は電話から">
+<meta property="og:image" content="https://sa008ta.github.io/juwaki-dash/cover.png">
+<meta property="og:url" content="https://sa008ta.github.io/juwaki-dash/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="受話器ダッシュ">
+<meta name="twitter:description" content="仕事をこなして、電話は誰より速く取れ。出世街道は電話から">
+<meta name="twitter:image" content="https://sa008ta.github.io/juwaki-dash/cover.png">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>受話器ダッシュ</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#20242c; font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif; touch-action:none; user-select:none; -webkit-user-select:none; }
+  #scene { position:fixed; inset:0; }
+  #scene canvas { display:block; }
+  .screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:14px; z-index:10; }
+  .hidden { display:none !important; }
+  .card { background:rgba(255,253,246,.97); border-radius:22px; padding:22px 20px 18px; width:100%; max-width:400px; box-shadow:0 14px 44px rgba(0,0,0,.45); text-align:center; max-height:calc(100dvh - 24px); overflow-y:auto; }
+  .hero { background:linear-gradient(135deg,#2b3a55,#16233c); border-radius:16px; padding:20px 10px 16px; margin:-6px -6px 14px; color:#fff; position:relative; overflow:hidden; }
+  .hero h1 { font-size:33px; font-weight:900; letter-spacing:1px; }
+  .hero h1 .gold { color:#ffb703; }
+  .hero .sub { font-size:12.5px; font-weight:700; opacity:.85; margin-top:5px; }
+  .btn { display:block; width:100%; border:none; border-radius:14px; padding:14px; font-size:16.5px; font-weight:900; cursor:pointer; margin:7px 0; font-family:inherit; }
+  .btn.main { background:linear-gradient(180deg,#ffb703,#f59e0b); color:#3a2a00; box-shadow:0 4px 0 #b45309; }
+  .btn.main:active { transform:translateY(3px); box-shadow:0 1px 0 #b45309; }
+  .btn.sub { background:#eef2e4; color:#33412a; box-shadow:0 3px 0 #c8d2b4; }
+  .btn.sub:active { transform:translateY(2px); box-shadow:0 1px 0 #c8d2b4; }
+  .btn:disabled { opacity:.45; }
+  .lbl { font-size:12px; font-weight:800; color:#7a6a4f; text-align:left; margin:10px 2px 2px; }
+  .howto { font-size:12px; font-weight:700; color:#6d7a5f; line-height:1.75; text-align:left; margin-top:12px; background:#f7f9f1; border-radius:12px; padding:10px 12px; }
+  .vsRow { display:flex; align-items:center; gap:12px; background:#f4f6ee; border-radius:14px; padding:12px; margin:10px 0; text-align:left; }
+  .vsRow .face { font-size:38px; }
+  .vsRow .nm { font-size:17px; font-weight:900; color:#26331f; }
+  .vsRow .ds { font-size:12px; font-weight:700; color:#77875f; }
+  /* HUD */
+  #hud { position:fixed; top:calc(8px + env(safe-area-inset-top)); left:10px; right:10px; display:flex; justify-content:space-between; align-items:flex-start; z-index:8; pointer-events:none; }
+  .pill { background:rgba(20,26,38,.78); color:#fff; border-radius:999px; padding:7px 14px; font-size:13.5px; font-weight:900; backdrop-filter:blur(3px); }
+  .pill .gold { color:#ffb703; }
+  #quitBtn { position:fixed; top:calc(52px + env(safe-area-inset-top)); right:10px; z-index:9; border:none; background:rgba(255,255,255,.85); color:#5a6e4c; font-weight:900; font-size:12.5px; border-radius:999px; padding:7px 13px; cursor:pointer; font-family:inherit; }
+  /* work task card */
+  #taskCard { position:fixed; left:8px; bottom:calc(10px + env(safe-area-inset-bottom)); width:min(57vw,340px); background:rgba(255,253,246,.98); border-radius:18px; box-shadow:0 10px 34px rgba(0,0,0,.4); padding:12px 14px 13px; z-index:9; text-align:center; }
+  #taskTitle { font-size:13px; font-weight:900; color:#7a6a4f; margin-bottom:7px; }
+  #taskBody { min-height:86px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+  .codeShow { font-size:30px; font-weight:900; letter-spacing:8px; color:#26331f; }
+  .codeDots { font-size:15px; letter-spacing:5px; color:#94a883; font-weight:900; }
+  .pad { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+  .pad button { width:52px; height:44px; border:none; border-radius:11px; background:#eef2e4; font-size:18px; font-weight:900; color:#33412a; cursor:pointer; font-family:inherit; box-shadow:0 3px 0 #c8d2b4; }
+  .pad button:active { transform:translateY(2px); box-shadow:0 1px 0 #c8d2b4; }
+  .stampRow { display:flex; gap:9px; flex-wrap:wrap; justify-content:center; max-width:210px; }
+  .stampBox { width:56px; height:56px; border:2.5px dashed #c3cfae; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:30px; cursor:pointer; background:#fff; }
+  .stampBox.done { border-style:solid; border-color:#d64545; color:#d64545; font-weight:900; }
+  .calcQ { font-size:27px; font-weight:900; color:#26331f; }
+  .choiceRow { display:flex; gap:8px; }
+  .choiceRow button { border:none; border-radius:12px; background:#eef2e4; padding:11px 20px; font-size:18px; font-weight:900; color:#33412a; cursor:pointer; font-family:inherit; box-shadow:0 3px 0 #c8d2b4; }
+  .docTab { font-size:15px; font-weight:900; padding:8px 18px; border-radius:10px; color:#fff; }
+  /* ring banner + grab target */
+  #ringBanner { position:fixed; top:19%; left:50%; transform:translateX(-50%); z-index:11; background:#d64545; color:#fff; font-size:24px; font-weight:900; border-radius:999px; padding:12px 30px; box-shadow:0 8px 30px rgba(214,69,69,.55); animation:shake .12s infinite; white-space:nowrap; }
+  @keyframes shake { 0%{transform:translateX(-50%) rotate(-1.2deg)} 50%{transform:translateX(calc(-50% + 2px)) rotate(1.2deg)} 100%{transform:translateX(-50%) rotate(-1.2deg)} }
+  #grabBtn { position:fixed; z-index:10; border:none; border-radius:50%; background:rgba(255,183,3,.28); box-shadow:0 0 0 3px rgba(255,183,3,.85), 0 0 34px rgba(255,183,3,.65); cursor:pointer; animation:pulse .5s infinite alternate; }
+  @keyframes pulse { from{ transform:scale(1);} to{ transform:scale(1.07);} }
+  #flash { position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:12; }
+  #bubble { position:fixed; z-index:10; background:#fff; border-radius:14px; padding:8px 15px; font-weight:900; font-size:17px; color:#26331f; box-shadow:0 6px 20px rgba(0,0,0,.35); transform:translate(-50%,-118%) scale(.5); opacity:0; transition:all .18s ease; pointer-events:none; white-space:nowrap; }
+  #bubble.show { opacity:1; transform:translate(-50%,-118%) scale(1); }
+  #bubble::after { content:''; position:absolute; left:50%; bottom:-7px; transform:translateX(-50%); border:8px solid transparent; border-top-color:#fff; border-bottom:0; }
+  #bossBubble { position:fixed; z-index:10; top:16%; left:50%; background:#3a0d0d; color:#ffb3b3; border-radius:14px; padding:10px 18px; font-weight:900; font-size:18px; box-shadow:0 8px 26px rgba(0,0,0,.5); transform:translate(-50%,0) scale(.5); opacity:0; transition:all .18s ease; pointer-events:none; white-space:nowrap; }
+  #bossBubble.show { opacity:1; transform:translate(-50%,0) scale(1); }
+  #bossBubble::after { content:''; position:absolute; left:50%; bottom:-7px; transform:translateX(-50%); border:8px solid transparent; border-top-color:#3a0d0d; border-bottom:0; }
+  .bigScore { font-size:30px; font-weight:900; color:#26331f; margin:4px 0; }
+  .msWin { color:#1d9e4b; } .msLose { color:#d64545; }
+  .ladderRow { display:flex; justify-content:space-between; padding:6px 4px; font-size:13.5px; font-weight:800; color:#5a6e4c; border-bottom:1px dashed #dde4cd; }
+  .ladderRow.done { color:#1d9e4b; } .ladderRow.now { color:#b45309; }
+  .ladderRow.pick { cursor:pointer; background:#f4f6ee; border-radius:10px; padding:8px 8px; border-bottom:none; margin:3px 0; }
+  .ladderRow.pick:active { background:#e6ecd8; }
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="flash"></div>
+
+<div id="hud" class="hidden">
+  <div class="pill" id="stagePill">同期戦</div>
+  <div class="pill">仕事 <span class="gold" id="workPt">0</span> pt</div>
+</div>
+<button id="quitBtn" class="hidden">やめる</button>
+<div id="ringBanner" class="hidden">📞 電話だ！取れ！</div>
+<div id="scoldBanner" class="hidden" style="position:fixed;top:26%;left:50%;transform:translateX(-50%);z-index:11;background:#3a0d0d;color:#ffb3b3;font-size:21px;font-weight:900;border-radius:16px;padding:14px 22px;box-shadow:0 10px 34px rgba(0,0,0,.5);white-space:nowrap">💢 上司「サボるな！仕事しろ！」</div>
+<button id="grabBtn" class="hidden" aria-label="受話器を取る"></button>
+<div id="bubble">もしもし</div>
+<div id="bossBubble">電話も取れないのか！</div>
+
+<div id="taskCard" class="hidden">
+  <div style="height:6px;background:#e3e8d5;border-radius:3px;overflow:hidden;margin-bottom:8px"><div id="taskBar" style="height:100%;width:100%;background:#7fb069;border-radius:3px"></div></div>
+  <div id="taskTitle">仕事中…</div><div id="taskMsg" style="font-size:12px;font-weight:900;color:#d64545;min-height:16px"></div><div id="scoldInfo" style="font-size:11.5px;font-weight:900;color:#d64545;min-height:15px"></div>
+  <div id="taskBody"></div>
+</div>
+
+<div id="screenTitle" class="screen">
+  <div class="card">
+    <div class="hero"><h1>受話器<span class="gold">ダッシュ</span></h1><div class="sub">出世街道は電話から</div></div>
+    <div class="lbl">👤 ユーザーネーム</div>
+    <div class="nameRow" style="margin-bottom:4px"><div id="nameTitle" style="background:#2b3a55;color:#ffb703;font-weight:900;font-size:13.5px;border-radius:12px;padding:8px 0;text-align:center;margin-bottom:6px">新人</div><input id="nameIn" maxlength="10" placeholder="ユーザーネーム" style="width:100%;padding:11px 13px;border:2px solid #d8dfc8;border-radius:12px;font-size:15px;font-weight:800;font-family:inherit;background:#fff"></div>
+    <button class="btn main" id="startBtn">スタート</button>
+    <button class="btn sub" id="rankBtn">🏆 世界ランキング</button>
+    <div id="ladderBox"></div>
+    <div id="titleWorkPt" style="font-size:13.5px;font-weight:900;color:#7a6a4f;margin-top:8px"></div>
+  </div>
+</div>
+
+<div id="screenRank" class="screen hidden">
+  <div class="card">
+    <h2 style="margin:2px 0 10px">🏆 世界ランキング</h2>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="btn main" id="rankTabPt" style="margin:0;padding:10px">📞 ポイント</button>
+      <button class="btn sub" id="rankTabMs" style="margin:0;padding:10px">⚡ スピード</button>
+    </div>
+    <div id="rankList" style="text-align:left;font-size:14px;font-weight:800;color:#44543a">読み込み中…</div>
+    <button class="btn sub" id="rankBackBtn">タイトルへ</button>
+  </div>
+</div>
+
+<div id="screenStage" class="screen hidden">
+  <div class="card">
+    <div class="lbl" style="text-align:center">対戦相手</div>
+    <div class="vsRow"><div class="face" id="stFace">🧑</div><div><div class="nm" id="stName">同期のタナカ</div></div></div>
+    <button class="btn main" id="stageGoBtn">仕事開始</button>
+    <button class="btn sub" id="stageBackBtn">タイトルへ</button>
+  </div>
+</div>
+
+<div id="screenResult" class="screen hidden">
+  <div class="card">
+    <div style="font-size:40px" id="resEmoji">🏆</div>
+    <h2 id="resTitle">勝ち！</h2>
+    <div class="bigScore"><span id="resMyMs"></span> <span id="resVs" style="font-size:16px;color:#77875f">vs</span> <span id="resRivalMs"></span></div>
+    <div id="resComment" style="font-size:14px;font-weight:900;color:#b3543f;margin:2px 0 4px"></div>
+    <div id="resWork" style="font-size:13.5px;font-weight:800;color:#77875f;margin-bottom:6px"></div>
+    <button class="btn main" id="resNextBtn">次へ</button>
+    <button class="btn sub" id="resTitleBtn">タイトルへ</button>
+  </div>
+</div>
+
+<div id="loadErr" class="screen hidden"><div class="card"><h2>読み込みに失敗しました</h2><p style="font-weight:700;color:#77875f;font-size:13px;margin-top:8px">通信環境を確認して、もう一度開いてください。</p></div></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const store = {
+  get(k, d) {
+    try { const v = localStorage.getItem(k); if (v != null) return JSON.parse(v); } catch (e) {}
+    try { const m = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]*)')); if (m) return JSON.parse(decodeURIComponent(m[1])); } catch (e) {}
+    return d;
+  },
+  set(k, v) {
+    try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+    try { document.cookie = k + '=' + encodeURIComponent(JSON.stringify(v)) + '; max-age=31536000; path=/; SameSite=Lax'; } catch (e) {}
+  },
+};
+/* ================= AUDIO (synth) ================= */
+let AC = null;
+function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+function tone(f, t0, dur, type, vol, slideTo) {
+  const c = ac(); if (!c) return;
+  const o = c.createOscillator(), g = c.createGain();
+  o.type = type || 'sine'; o.frequency.setValueAtTime(f, c.currentTime + t0);
+  if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime + t0 + dur);
+  g.gain.setValueAtTime(0.0001, c.currentTime + t0);
+  g.gain.exponentialRampToValueAtTime(vol || 0.12, c.currentTime + t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + t0 + dur);
+  o.connect(g); g.connect(c.destination); o.start(c.currentTime + t0); o.stop(c.currentTime + t0 + dur + 0.05);
+}
+const sfx = {
+  ok() { tone(880, 0, 0.07, 'sine', 0.1); tone(1320, 0.06, 0.1, 'sine', 0.1); },
+  bad() { tone(160, 0, 0.14, 'square', 0.06); },
+  type() { tone(1200 + Math.random() * 500, 0, 0.03, 'square', 0.03); },
+  pickup() { tone(500, 0, 0.05, 'square', 0.08); tone(900, 0.05, 0.08, 'sine', 0.1); },
+  win() { [660, 880, 1100, 1470].forEach((f, i) => tone(f, i * 0.09, 0.16, 'triangle', 0.12)); },
+  lose() { [420, 340, 260].forEach((f, i) => tone(f, i * 0.12, 0.18, 'triangle', 0.1)); },
+};
+let ringTimer = null;
+function ringStart() {
+  const pulse = () => { for (let i = 0; i < 7; i++) tone(i % 2 ? 440 : 480, i * 0.055, 0.05, 'square', 0.045); };
+  pulse(); ringTimer = setInterval(pulse, 1000);
+}
+function ringStop() { if (ringTimer) { clearInterval(ringTimer); ringTimer = null; } }
+/* ================= GAME STATE ================= */
+const STAGES = [
+  { name: '同期のタナカ', face: '🧑', ms: 650, desc: 'まだ余裕。でも油断すると先に取られる。' },
+  { name: '先輩のスズキ', face: '🧑‍💼', ms: 530, desc: '電話番の経験が違う。鳴った瞬間に手が動く。' },
+  { name: '課長のサトウ', face: '👨‍💼', ms: 440, desc: '周りの部下も巻き込んで一斉に鳴る。速い。' },
+  { name: '部長のヤマダ', face: '👴', ms: 350, desc: '若い頃は電話番で名を馳せた男。かなり速い。' },
+  { name: '社長のオオタ', face: '🤴', ms: 270, desc: '伝説の電話番。鳴る前に手が動くという噂。' },
+  { name: 'アレクサンダー・グラハム・ベル', face: '👨‍🔬', ms: 195, desc: '' },
+];
+function racersFor(stage) {
+  if (stage < 2) return [{ side: 'left', st: STAGES[stage] }];
+  if (stage === 4) return [{ side: 'left', st: STAGES[4] }, { side: 'right', st: STAGES[3] }];
+  return [{ side: 'left', st: STAGES[stage] }, { side: 'right', st: STAGES[stage - 1] }];
+}
+const G = {
+  screen: 'title', stage: store.get('phone_progress', 0), phase: 'idle', // idle|work|ring|done
+  workPt: store.get('phone_workpt', 0), bestMs: store.get('phone_bestms', 0), runWorkPt: 0, ringAt: 0, ringStart: 0, myMs: null, racers: [], taskTimer: null, ringTO: null, scolds: 0, taskStart: 0, taskActive: false,
+  meGrab: 0, leftGrab: 0, rightGrab: 0, grabAnim: null, result: null, rivalWon: null, loseAt: 0, resultAt: 0,
+};
+function showScreen(name) {
+  G.screen = name || 'none';
+  for (const [id, key] of [['screenTitle', 'title'], ['screenStage', 'stage'], ['screenResult', 'result'], ['screenRank', 'rank']]) $(id).classList.toggle('hidden', name !== key);
+  if (name) { $('hud').classList.add('hidden'); $('quitBtn').classList.add('hidden'); }
+}
+function renderLadder() {
+  const tf = titleFor(G.workPt);
+  $('nameTitle').textContent = tf.name;
+  $('titleWorkPt').innerHTML = '🏅 ' + tf.name + '｜累計 ' + G.workPt + ' pt' + (tf.next ? '（あと' + tf.remain + 'ptで「' + tf.next + '」）' : '（最高位）') + (G.bestMs ? '<br>⚡ 受話器ベスト ' + (G.bestMs / 1000).toFixed(3) + '秒' : '');
+  $('workPt').textContent = G.workPt;
+  const prog = store.get('phone_progress', 0);
+  $('ladderBox').innerHTML = '<div class="lbl">📈 出世街道（タップで選べる）</div>' + STAGES.map((s, i) => {
+    if (i === 5 && prog < 5) return '<div class="ladderRow"><span>❓ ？？？</span><span>―</span></div>';
+    return `<div class="ladderRow ${i < prog ? 'done' : i === prog ? 'now' : ''} ${i <= prog ? 'pick' : ''}" ${i <= prog ? 'data-stage="' + i + '"' : ''}><span>${s.face} ${s.name}</span><span>${i < prog ? '制覇 ✓' : i === prog ? '現在の相手' : '―'}</span></div>`;
+  }).join('');
+  for (const row of $('ladderBox').querySelectorAll('[data-stage]')) row.onclick = () => { ac(); G.stage = parseInt(row.dataset.stage, 10); openStage(); };
+}
+/* ================= WORK TASKS ================= */
+function taskMistake(msg) {
+  G.failMsg = msg || '';
+  if (G.phase !== 'work' || !G.taskActive) return;
+  G.taskActive = false;
+  if (G.taskTimer) { clearTimeout(G.taskTimer); clearInterval(G.taskTimer); G.taskTimer = null; }
+  $('taskCard').classList.add('hidden');
+  sfx.bad();
+  $('scoldBanner').textContent = '💢 上司「ミスするな！しっかりしろ！」';
+  $('scoldBanner').classList.remove('hidden');
+  document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake');
+  setTimeout(() => { $('scoldBanner').classList.add('hidden'); failByScold('mistake'); }, 1000);
+}
+const TASK_DEFS = [
+  { title: '💻 キーボード入力：表示された数字を打て', make(body, done) {
+      const code = String(Math.floor(1000 + Math.random() * 9000));
+      let entered = '';
+      const show = document.createElement('div'); show.className = 'codeShow'; show.textContent = code;
+      const dots = document.createElement('div'); dots.className = 'codeDots'; dots.style.letterSpacing = '6px';
+      const upd = () => dots.textContent = (entered + '○'.repeat(4 - entered.length)).split('').join(' ');
+      upd();
+      const pad = document.createElement('div'); pad.className = 'pad';
+      for (const dgt of ['1','2','3','4','5','6','7','8','9','0','⌫']) {
+        const b = document.createElement('button'); b.textContent = dgt;
+        b.onclick = () => {
+          if (dgt === '⌫') { entered = entered.slice(0, -1); upd(); sfx.type(); return; }
+          if (entered.length >= 4) return;
+          sfx.type(); entered += dgt; upd();
+          if (entered.length === 4) {
+            if (entered === code) done();
+            else { taskMistake('数字を間違えた'); entered = ''; upd(); }
+          }
+        };
+        pad.appendChild(b);
+      }
+      body.append(show, dots, pad);
+  } },
+  { title: '📄 書類にハンコを押せ（✕は押すな）', make(body, done) {
+      const row = document.createElement('div'); row.className = 'stampRow';
+      let n = 0;
+      const boxes = [];
+      for (let i = 0; i < 3; i++) {
+        const b = document.createElement('div'); b.className = 'stampBox'; b.textContent = '・';
+        b.onclick = () => { if (b.classList.contains('done')) return; b.classList.add('done'); b.textContent = '済'; sfx.type(); if (++n >= 3) done(); };
+        boxes.push(b);
+      }
+      const decoy = document.createElement('div'); decoy.className = 'stampBox'; decoy.textContent = '✕'; decoy.style.color = '#d64545'; decoy.style.fontSize = '15px'; decoy.style.fontWeight = '900';
+      decoy.onclick = () => taskMistake('押してはいけない書類にハンコを押した');
+      boxes.splice(Math.floor(Math.random() * 4), 0, decoy);
+      for (const b of boxes) row.appendChild(b);
+      const note = document.createElement('div'); note.style.cssText = 'font-size:11.5px;font-weight:800;color:#77875f'; note.textContent = '✕の書類は押さない';
+      body.append(row, note);
+  } },
+  { title: '🧮 計算して答えを選べ', make(body, done) {
+      const mul = Math.random() < 0.4;
+      const a = mul ? 2 + Math.floor(Math.random() * 8) : 4 + Math.floor(Math.random() * 26);
+      const b = mul ? 3 + Math.floor(Math.random() * 6) : 3 + Math.floor(Math.random() * 26);
+      const ans = mul ? a * b : a + b;
+      const q = document.createElement('div'); q.className = 'calcQ'; q.textContent = `${a} ${mul ? '×' : '＋'} ${b} ＝ ?`;
+      const row = document.createElement('div'); row.className = 'choiceRow';
+      const opts = [...new Set([ans, ans + 1 + Math.floor(Math.random() * 3), ans - 1 - Math.floor(Math.random() * 3), ans + 5])].slice(0, 3);
+      while (opts.length < 3) opts.push(ans + opts.length + 2);
+      opts.sort(() => Math.random() - 0.5);
+      for (const v of opts) { const btn = document.createElement('button'); btn.textContent = v; btn.onclick = () => { if (v === ans) { sfx.type(); done(); } else taskMistake('計算を間違えた'); }; row.appendChild(btn); }
+      body.append(q, row);
+  } },
+  { title: '🗂️ 書類を同じ色のトレーへ', make(body, done) {
+      const cols = [{ n: '赤', c: '#d64545' }, { n: '青', c: '#3a86ff' }, { n: '緑', c: '#2e933c' }];
+      const pick = cols[Math.floor(Math.random() * 3)];
+      const names = ['請求書', '見積書', '報告書', '契約書'];
+      const tab = document.createElement('div'); tab.className = 'docTab'; tab.style.background = pick.c; tab.textContent = '📄 ' + names[Math.floor(Math.random() * names.length)] + '（' + pick.n + 'タブ）';
+      const row = document.createElement('div'); row.className = 'choiceRow';
+      for (const col of cols) { const btn = document.createElement('button'); btn.textContent = col.n + 'トレー'; btn.style.background = col.c; btn.style.color = '#fff'; btn.onclick = () => { if (col === pick) { sfx.type(); done(); } else taskMistake('違う色のトレーに入れた'); }; row.appendChild(btn); }
+      body.append(tab, row);
+  } },
+  { title: '🍵 お茶くみ：緑の範囲で止めろ', make(body, done) {
+      const wrap = document.createElement('div'); wrap.style.cssText = 'position:relative;width:74px;height:104px;border:3px solid #8a97ad;border-top:none;border-radius:0 0 14px 14px;overflow:hidden;background:#fbfbf7';
+      const zone = document.createElement('div'); zone.style.cssText = 'position:absolute;left:0;right:0;bottom:66%;height:24%;background:rgba(46,147,60,.3);border-top:2px dashed #2e933c;border-bottom:2px dashed #2e933c';
+      const fill = document.createElement('div'); fill.style.cssText = 'position:absolute;left:0;right:0;bottom:0;height:0%;background:linear-gradient(#8fd0ff,#3a86ff)';
+      wrap.append(zone, fill);
+      const btn = document.createElement('button'); btn.textContent = '長押しで注ぐ'; btn.style.cssText = 'background:#2e933c;color:#fff;font-size:16px;padding:12px 22px;border-radius:12px';
+      body.append(wrap, btn);
+      let pct = 0, iv = null, over = false;
+      const stop = () => { if (iv) { clearInterval(iv); iv = null; } };
+      btn.addEventListener('pointerdown', e => { e.preventDefault(); if (iv || over) return; iv = setInterval(() => { if (!G.taskActive) { stop(); return; } pct = Math.min(100, pct + 2.4); fill.style.height = pct + '%'; if (pct >= 100) { over = true; stop(); taskMistake('お茶があふれた'); } }, 30); });
+      const release = () => { if (!iv) return; stop(); if (over) return; if (pct >= 66 && pct <= 90) { sfx.type(); done(); } else taskMistake(pct < 66 ? 'お茶が少なかった' : 'お茶が多かった'); };
+      btn.addEventListener('pointerup', release);
+      btn.addEventListener('pointerleave', release);
+      btn.addEventListener('pointercancel', release);
+  } },
+  { title: '🗂 書類を古い順にタップ', make(body, done) {
+      const base = 1 + Math.floor(Math.random() * 8);
+      const dates = new Set();
+      while (dates.size < 3) dates.add(base + Math.floor(Math.random() * 20));
+      const sorted = [...dates].sort((a, b) => a - b);
+      const disp = d => Math.floor(d / 28 + 1) + '月' + (d % 28 + 1) + '日';
+      const lbl = document.createElement('div'); lbl.style.cssText = 'font-size:13px;font-weight:900;color:#5b6b52;align-self:flex-start';
+      const col = document.createElement('div'); col.style.cssText = 'display:flex;flex-direction:column;gap:8px;width:100%';
+      let step = 0;
+      const upd = () => { lbl.textContent = '▼ 古い順にタップ（' + step + ' / 3）'; };
+      upd();
+      for (const d of [...sorted].sort(() => Math.random() - 0.5)) {
+        const btn = document.createElement('button'); btn.style.cssText = 'background:#fff;color:#26331f;border:2.5px solid #c3cfae;border-radius:12px;padding:13px 14px;text-align:left;display:flex;justify-content:space-between;align-items:center';
+        btn.innerHTML = '<span style="font-size:19px;font-weight:900">📄 ' + disp(d) + '</span><span class="ord" style="font-size:19px;font-weight:900;color:#1d9e4b"></span>';
+        btn.onclick = () => { if (d === sorted[step]) { step++; btn.querySelector('.ord').textContent = ['①', '②', '③'][step - 1] + ' ✓'; btn.style.background = '#e5f4d8'; btn.style.borderColor = '#2e933c'; btn.disabled = true; sfx.type(); upd(); if (step >= 3) done(); } else taskMistake('書類の順番を間違えた'); };
+        col.appendChild(btn);
+      }
+      body.append(lbl, col);
+  } },
+  { title: '🔍 指定の単語を探してタップ', make(body, done) {
+      const sets = [
+        { t: '会議', d: ['会義', '議会', '合議', '会儀', '会談'] },
+        { t: '納期', d: ['納品', '納入', '工期', '期日', '納期日'] },
+        { t: '書類', d: ['書籍', '書面', '文書', '資料', '書類い'] },
+        { t: '連絡', d: ['連盟', '聯絡', '運絡', '連絡先', '連格'] },
+        { t: '請求', d: ['請負', '請願', '求請', '請求書', '請託'] },
+      ];
+      const set = sets[Math.floor(Math.random() * sets.length)];
+      const cap = document.createElement('div'); cap.style.cssText = 'font-size:19px;font-weight:900'; cap.textContent = '「' + set.t + '」はどれ？';
+      const grid = document.createElement('div'); grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%';
+      for (const w of [set.t, ...set.d].sort(() => Math.random() - 0.5)) {
+        const btn = document.createElement('button'); btn.textContent = w; btn.style.cssText = 'background:#eef1e4;color:#26331f;font-size:16px;padding:11px 0;border-radius:10px';
+        btn.onclick = () => { if (w === set.t) { sfx.type(); done(); } else taskMistake('漢字を間違えた'); };
+        grid.appendChild(btn);
+      }
+      body.append(cap, grid);
+  } },
+  { title: '✉️ メール返信：合う返事を選べ', make(body, done) {
+      const S = [
+        { from: '同僚', msg: 'おはようございます！', ok: 'おはようございます', ng: ['お疲れ様です', 'いただきます'] },
+        { from: '同僚', msg: 'お先に失礼します', ok: 'お疲れ様でした', ng: ['おはようございます', 'ごちそうさまでした'] },
+        { from: '部長', msg: '資料、送っておいたよ', ok: 'ありがとうございます。確認いたします', ng: ['了解です！', 'OKです'] },
+        { from: '部長', msg: '明日の会議は10時からに変更だ', ok: '承知しました', ng: ['了解です', 'わかった'] },
+        { from: '先輩', msg: 'この前は助かったよ、ありがとう', ok: 'こちらこそありがとうございました', ng: ['すみません', 'おはようございます'] },
+        { from: '取引先', msg: 'お世話になっております', ok: 'こちらこそお世話になっております', ng: ['お疲れ様です', 'ご苦労様です'] },
+        { from: '同僚', msg: '申し訳ない、遅れそう…', ok: 'とんでもないです。お気をつけて', ng: ['許しません', 'いただきます'] },
+        { from: '新入社員', msg: '初めまして！よろしくお願いします', ok: '初めまして、よろしくお願いいたします', ng: ['どうもー', 'お世話様です'] },
+      ];
+      const s = S[Math.floor(Math.random() * S.length)];
+      const mail = document.createElement('div'); mail.style.cssText = 'background:#fff;border:2.5px solid #7fb0e6;border-radius:14px;padding:12px 14px;color:#22354d;width:100%;text-align:left;box-shadow:0 3px 10px rgba(58,134,255,.15)';
+      mail.innerHTML = '<div style="font-size:12px;font-weight:900;color:#3a86ff;margin-bottom:5px">✉️ ' + s.from + 'からのメール</div><div style="font-size:17px;font-weight:900;line-height:1.45">' + s.msg + '</div>';
+      const lbl = document.createElement('div'); lbl.style.cssText = 'font-size:13px;font-weight:900;color:#5b6b52;align-self:flex-start'; lbl.textContent = '▼ あなたの返信は？';
+      const row = document.createElement('div'); row.className = 'choiceRow'; row.style.flexDirection = 'column'; row.style.alignItems = 'stretch'; row.style.width = '100%';
+      for (const w of [s.ok, ...s.ng].sort(() => Math.random() - 0.5)) {
+        const btn = document.createElement('button'); btn.textContent = w; btn.style.cssText = 'background:#e5f4d8;color:#26331f;font-size:15.5px;font-weight:800;padding:14px 13px;border-radius:12px;text-align:left;border:2px solid #b9d69a;line-height:1.4';
+        btn.onclick = () => { if (w === s.ok) { sfx.type(); done(); } else taskMistake('返信の言葉を間違えた'); };
+        row.appendChild(btn);
+      }
+      body.append(mail, lbl, row);
+  } },
+];
+let taskSeq = 0;
+function nextTask() {
+  if (G.phase !== 'work') return;
+  G.taskActive = true; G.taskStart = performance.now();
+  const def = TASK_DEFS[Math.floor(Math.random() * TASK_DEFS.length)];
+  $('taskTitle').textContent = def.title;
+  const body = $('taskBody'); body.innerHTML = '';
+  const mySeq = ++taskSeq;
+  def.make(body, () => {
+    if (G.phase !== 'work' || mySeq !== taskSeq) return;
+    G.taskActive = false;
+    G.workPt += 10; G.runWorkPt += 10; $('workPt').textContent = G.workPt; store.set('phone_workpt', G.workPt);
+    sfx.ok();
+    body.innerHTML = '<div style="font-size:26px;font-weight:900;color:#1d9e4b">✓ 完了 +10pt</div>';
+    taskSeq++;
+    G.taskTimer = setTimeout(nextTask, 300);
+  });
+}
+/* ================= SCOLD (サボると怒られる) ================= */
+const TASK_LIMIT = 7000;
+function updScoldInfo() { $('scoldInfo').textContent = ''; }
+function scold() {
+  G.taskActive = false; G.scolds++;
+  G.workPt = Math.max(0, G.workPt - 20); G.runWorkPt -= 20; $('workPt').textContent = G.workPt; store.set('phone_workpt', G.workPt);
+  sfx.bad(); tone(120, 0.15, 0.3, 'sawtooth', 0.07);
+  $('scoldBanner').textContent = '💢 上司「サボるな！仕事しろ！」';
+  $('scoldBanner').classList.remove('hidden');
+  const sc = $('scene'); sc.style.transition = 'transform .05s'; let n = 0;
+  const sh = setInterval(() => { sc.style.transform = 'translate(' + (Math.random() * 10 - 5) + 'px,' + (Math.random() * 6 - 3) + 'px)'; if (++n > 7) { clearInterval(sh); sc.style.transform = ''; } }, 50);
+  setTimeout(() => $('scoldBanner').classList.add('hidden'), 1300);
+  updScoldInfo();
+  if (G.scolds >= 1) { failByScold(); return; }
+  taskSeq++;
+  G.taskTimer = setTimeout(nextTask, 500);
+}
+function failByScold(reason) {
+  if (G.ringTO) clearTimeout(G.ringTO); if (G.taskTimer) clearTimeout(G.taskTimer);
+  G.phase = 'done'; ringStop();
+  $('taskCard').classList.add('hidden'); $('ringBanner').classList.add('hidden'); $('grabBtn').classList.add('hidden');
+  sfx.lose();
+  $('resEmoji').textContent = '💢';
+  $('resTitle').textContent = reason === 'mistake' ? 'ミスして失敗…' : 'サボって失敗…';
+  $('resMyMs').innerHTML = reason === 'mistake' ? (G.failMsg || 'タスクの答えをミスった') : 'タスクを1個サボった';
+  $('resRivalMs').innerHTML = ''; $('resVs').style.display = 'none';
+  $('resWork').textContent = '仕事は制限時間内に終わらせよう（この回の仕事ポイント ' + G.runWorkPt + 'pt）';
+  $('resNextBtn').textContent = 'もう一度挑戦';
+  submitScore();
+  showResultDelayed(1100);
+}
+const LOSE_COMMENTS = [
+  ['同期に先を越された…', 'タナカ、今日はやる気だ', '同期の背中が遠い…'],
+  ['先輩の電話さばきは一味違う', 'スズキ先輩に花を持たれた', '先輩の壁は厚かった'],
+  ['課長、まだまだ現役だ', 'サトウ課長の信頼が上がった', '課長に叱られる…'],
+  ['部長の貫禄勝ち', 'ヤマダ部長にいいとこ見せられた', '部長の席はまだ遠い'],
+  ['社長、伝説は本当だった', 'オオタ社長の手はもう受話器の上だった', '社長自ら取るとは…'],
+  ['発明者に敗れた…', 'ベル「もしもしは私が作った言葉だ」', '電話の発明者、伊達じゃない'],
+];
+const LOSE_LOW = ['営業成績が最下位になってしまった', '仕事も電話も、今日は散々だ', 'このままだと左遷かも…', '成績表の一番下に名前があった', '電話の前に、まず仕事を覚えよう'];
+const LOSE_HIGH = ['仕事はピカイチなのに、電話で負けた', '仕事の神、電話で敗れる', '仕事ができすぎて油断した', '電話さえ取れれば完璧だった'];
+const LOSE_GENERIC = ['あと少しだったのに', '指が届かなかった…', '次は絶対に取る', '電話の神様は相手の味方だった'];
+function pickLoseComment(winnerName) {
+  const wi = STAGES.findIndex(s => s.name === winnerName);
+  let pool = [...(LOSE_COMMENTS[wi >= 0 ? wi : G.stage] || []), ...LOSE_GENERIC];
+  if (G.runWorkPt <= 30) pool = pool.concat(LOSE_LOW);
+  if (G.runWorkPt >= 150) pool = pool.concat(LOSE_HIGH);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+/* ================= NAMES / NG ================= */
+const NG_WORDS = [
+  'ちんこ', 'チンコ', 'ちんぽ', 'チンポ', 'ちんちん', 'チンチン', 'ちんかす', 'まんこ', 'マンコ', 'おまんこ', 'まんかす',
+  'きんたま', 'キンタマ', '金玉', 'たまきん', 'くりとりす', 'クリトリス', '陰核', 'いんかく',
+  'ペニス', 'ぺにす', '陰茎', 'いんけい', '膣', '肛門', 'こうもん', 'アナル', 'あなる',
+  'セックス', 'せっくす', 'エロ', 'えろ', 'オナニー', 'おなにー', '自慰', '射精', 'しゃせい', '精液', 'せいえき', '精子',
+  'フェラ', 'ふぇら', 'パイズリ', 'ぱいずり', '手コキ', 'てこき', '中出し', 'なかだし', '潮吹き', 'しおふき',
+  '勃起', 'ぼっき', '淫乱', 'いんらん', '淫', '変態', 'へんたい', '痴漢', 'ちかん', 'レイプ', 'れいぷ', '強姦', 'ごうかん',
+  'ロリ', 'ろり', 'ショタ', 'しょた', 'ふたなり', '風俗', 'ふうぞく', 'ソープランド', 'そーぷ', '愛液', 'あいえき',
+  '巨乳', 'きょにゅう', 'おっぱい', 'オッパイ', '乳首', 'ちくび', '処女', 'しょじょ', '童貞', 'どうてい',
+  'ヤリマン', 'やりまん', 'ビッチ', 'びっち', '売春', 'ばいしゅん', '援交', 'えんこう', 'パパ活', 'ぱぱかつ',
+  'うんこ', 'ウンコ', 'くそったれ', 'クソッタレ', '死ね', 'しね',
+  'fuck', 'shit', 'dick', 'cock', 'pussy', 'bitch', 'porn', 'sex', 'anal', 'cum', 'tits', 'boobs', 'penis', 'vagina', 'hentai', 'whore', 'slut', 'nigger'
+];
+function ngNorm(s) {
+  return (s || '').toLowerCase()
+    .replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/[\s　・._\-ー]/g, '');
+}
+const NG_NORM = NG_WORDS.map(ngNorm);
+function hasNG(s) {
+  const n = ngNorm(s);
+  return NG_NORM.some(w => w && n.includes(w));
+}
+function cleanName(s, fallback) {
+  s = (s || '').trim();
+  if (!s || !hasNG(s)) return s;
+  let out = s;
+  for (const w of NG_WORDS) out = out.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '＊'.repeat(Math.max(2, w.length)));
+  return hasNG(out) ? fallback : out;
+}
+function myName() { return cleanName(store.get('phone_name', ''), 'NONAME') || 'NONAME'; }
+function phonePid() {
+  let id = store.get('phone_pid', '');
+  if (!id) { id = 'p' + Math.floor(Math.random() * 0xffffffff).toString(16) + Date.now().toString(16); store.set('phone_pid', id); }
+  return id;
+}
+/* ================= TITLES ================= */
+const TITLES = [[0, '新人'], [100, '電話番見習い'], [300, '一人前の電話番'], [600, '電話番リーダー'], [1000, '電話の達人'], [2000, '伝説の電話番'], [4000, '電話の神'], [8000, '電話の発明者']];
+function titleFor(pt) {
+  let cur = TITLES[0], next = null;
+  for (let i = 0; i < TITLES.length; i++) { if (pt >= TITLES[i][0]) { cur = TITLES[i]; next = TITLES[i + 1] || null; } }
+  return { name: cur[1], next: next ? next[1] : null, remain: next ? next[0] - pt : 0 };
+}
+/* ================= WORLD RANKING BACKEND ================= */
+const RANK_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSetXnUEhpxMd5N0qzB2P23og6ZGEZ5AFr1GaOdbv4reCH6PAg/formResponse';
+const RANK_ENT = { name: 'entry.728886591', pt: 'entry.952075242', pid: 'entry.1284406217', date: 'entry.757860554', ms: 'entry.1851017263' };
+const RANK_SHEET = '1jS-j9LjovpVyDS14MEZ9NE6NaQD5n_M4coEYC7q15SA';
+function formPost(url, ent, vals) {
+  const b = new URLSearchParams();
+  for (const k in ent) b.append('entry.' + ent[k], vals[k] == null ? '' : '' + vals[k]);
+  fetch(url, { method: 'POST', mode: 'no-cors', body: b }).catch(() => {});
+}
+function sheetLoad(id) {
+  return fetch('https://docs.google.com/spreadsheets/d/' + id + '/gviz/tq?tqx=out:json&headers=1&_=' + Date.now())
+    .then(r => r.text())
+    .then(t => { const j = JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)); return (j.table.rows || []).map(r => (r.c || []).map(c => c && c.v != null ? String(c.v) : '')); })
+    .catch(() => null);
+}
+function fmtDate(d) { return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+function submitScore() {
+  if (RANK_FORM === 'PENDING_FORM') return;
+  const subPt = store.get('phone_sub_pt', 0), subMs = store.get('phone_sub_ms', 0);
+  const betterPt = G.workPt > subPt, betterMs = G.bestMs > 0 && (!subMs || G.bestMs < subMs);
+  if (!betterPt && !betterMs) return;
+  formPost(RANK_FORM, RANK_ENT, { name: myName(), pt: G.workPt, pid: phonePid(), date: fmtDate(new Date()), ms: G.bestMs || '' });
+  store.set('phone_sub_pt', Math.max(subPt, G.workPt));
+  if (G.bestMs) store.set('phone_sub_ms', subMs ? Math.min(subMs, G.bestMs) : G.bestMs);
+}
+let rankMode = 'pt', rankRows = null;
+async function openRank() {
+  showScreen('rank');
+  $('rankList').textContent = '読み込み中…';
+  const rows = RANK_SHEET === 'PENDING_SHEET' ? null : await sheetLoad(RANK_SHEET);
+  rankRows = rows;
+  renderRank();
+}
+function renderRank() {
+  $('rankTabPt').className = 'btn ' + (rankMode === 'pt' ? 'main' : 'sub');
+  $('rankTabMs').className = 'btn ' + (rankMode === 'ms' ? 'main' : 'sub');
+  const el = $('rankList');
+  if (!rankRows) { el.textContent = '読み込めませんでした'; return; }
+  const byPid = {};
+  for (const r of rankRows) {
+    const name = r[1], pt = parseInt(r[2], 10), pid = r[3], ms = parseInt(r[5], 10);
+    if (!pid) continue;
+    const cur = byPid[pid] || (byPid[pid] = { name: '', pt: 0, ms: 0 });
+    if (name) cur.name = name;
+    if (!isNaN(pt)) cur.pt = Math.max(cur.pt, pt);
+    if (!isNaN(ms) && ms > 0) cur.ms = cur.ms ? Math.min(cur.ms, ms) : ms;
+  }
+  let list = Object.entries(byPid).map(([pid, v]) => ({ pid, ...v }));
+  list = rankMode === 'pt' ? list.filter(v => v.pt > 0).sort((a, b) => b.pt - a.pt) : list.filter(v => v.ms > 0).sort((a, b) => a.ms - b.ms);
+  list = list.slice(0, 20);
+  if (!list.length) { el.textContent = 'まだ記録がありません'; return; }
+  const me = phonePid();
+  el.innerHTML = list.map((v, i) => {
+    const nm = cleanName(v.name, 'NONAME') || 'NONAME';
+    const val = rankMode === 'pt' ? v.pt + ' pt' : (v.ms / 1000).toFixed(3) + '秒';
+    return '<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 4px;border-bottom:1px dashed #dde4cd;' + (v.pid === me ? 'color:#b45309' : '') + '"><span>' + (i + 1) + '位 ' + titleFor(v.pt).name + ' ' + nm + '</span><span>' + val + '</span></div>';
+  }).join('');
+}
+/* ================= FLOW ================= */
+function openStage() {
+  const st = STAGES[G.stage];
+  $('stFace').textContent = st.face; $('stName').textContent = st.name;
+  showScreen('stage');
+}
+function beginWork() {
+  showScreen(null);
+  G.phase = 'work'; G.runWorkPt = 0; G.scolds = 0; updScoldInfo(); G.myMs = null; G.rivalWon = null;
+  $('resComment').textContent = ''; $('bubble').classList.remove('show'); $('bossBubble').classList.remove('show'); G.meGrab = 0; G.leftGrab = 0; G.rightGrab = 0; G.result = null;
+  G.racers = racersFor(G.stage).map(r => ({ ...r, ms: Math.max(120, r.st.ms + (Math.random() * 110 - 55)), grabbedAt: null }));
+  $('stagePill').textContent = STAGES[G.stage].name + ' 戦';
+  $('hud').classList.remove('hidden'); $('quitBtn').classList.remove('hidden'); $('taskCard').classList.remove('hidden');
+  taskSeq++; nextTask();
+  const wait = 6000 + Math.random() * 7000;
+  G.ringTO = setTimeout(fireRing, wait);
+}
+function fireRing() {
+  if (G.phase !== 'work') return;
+  G.phase = 'ring'; G.ringStart = performance.now();
+  taskSeq++; if (G.taskTimer) clearTimeout(G.taskTimer);
+  $('taskCard').classList.add('hidden'); $('ringBanner').classList.remove('hidden');
+  positionGrab(); $('grabBtn').classList.remove('hidden');
+  ringStart();
+}
+function positionGrab() {
+  if (!window.R3D || !R3D.phoneScreen) return;
+  const p = R3D.phoneScreen();
+  const s = Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.34);
+  const b = $('grabBtn');
+  b.style.width = s + 'px'; b.style.height = s + 'px';
+  b.style.left = (p.nx * window.innerWidth - s / 2) + 'px';
+  b.style.top = (p.ny * window.innerHeight - s / 2) + 'px';
+}
+function showResultDelayed(ms) {
+  setTimeout(() => { if (G.phase !== 'done') return; armResultLock(); showScreen('result'); }, ms);
+}
+function armResultLock() {
+  G.resultAt = performance.now();
+  for (const b of [$('resNextBtn'), $('resTitleBtn')]) { b.style.pointerEvents = 'none'; b.style.opacity = '.55'; }
+  setTimeout(() => { for (const b of [$('resNextBtn'), $('resTitleBtn')]) { b.style.pointerEvents = ''; b.style.opacity = ''; } }, 1000);
+}
+function resultLocked() { return performance.now() - G.resultAt < 1000; }
+let bubbleTO = null;
+function showBubble(who) {
+  if (!window.R3D || !R3D.anchor) return;
+  const a = R3D.anchor(who);
+  const b = $('bubble');
+  b.style.left = (a.nx * window.innerWidth) + 'px';
+  b.style.top = (a.ny * window.innerHeight) + 'px';
+  b.classList.add('show');
+  if (bubbleTO) clearTimeout(bubbleTO);
+  bubbleTO = setTimeout(() => b.classList.remove('show'), 2100);
+}
+const BOSS_LINES = ['電話も取れないのか！', '何のための電話番だ！', '次は必ず取るんだぞ！', '今の電話、大事な取引先だったぞ…'];
+let bossTO = null;
+function showBossBubble() {
+  const b = $('bossBubble');
+  b.textContent = '💢 ' + BOSS_LINES[Math.floor(Math.random() * BOSS_LINES.length)];
+  b.classList.add('show');
+  sfx.bad();
+  if (bossTO) clearTimeout(bossTO);
+  bossTO = setTimeout(() => b.classList.remove('show'), 2000);
+}
+function resolve(win, myMs) {
+  if (G.phase === 'done') return;
+  G.phase = 'done'; ringStop();
+  $('ringBanner').classList.add('hidden'); $('grabBtn').classList.add('hidden'); $('taskCard').classList.add('hidden');
+  const fastest = Math.min(...G.racers.map(r => r.ms));
+  if (win) { sfx.pickup(); setTimeout(() => sfx.win(), 120); showBubble('me'); } else sfx.lose();
+  if (win && G.stage >= store.get('phone_progress', 0)) store.set('phone_progress', Math.min(STAGES.length, G.stage + 1));
+  if (win && myMs != null && (!G.bestMs || myMs < G.bestMs)) { G.bestMs = Math.round(myMs); store.set('phone_bestms', G.bestMs); }
+  submitScore();
+  $('resVs').style.display = '';
+  const lastStage = G.stage >= STAGES.length - 1;
+  $('resEmoji').textContent = win ? (lastStage ? '👑' : '🏆') : '📞💦';
+  if (win) {
+    $('resComment').textContent = '';
+    $('resTitle').textContent = lastStage ? '全制覇！電話の発明者超え！' : '勝ち！ ' + STAGES[G.stage].name + ' 制覇';
+    $('resMyMs').innerHTML = 'あなた <span class="msWin">' + (myMs / 1000).toFixed(3) + '秒</span>';
+    $('resRivalMs').innerHTML = '相手 <span>' + (fastest / 1000).toFixed(3) + '秒</span>';
+  } else {
+    const w = G.rivalWon || { name: STAGES[G.stage].name, ms: fastest };
+    $('resComment').textContent = pickLoseComment(w.name);
+    $('resTitle').textContent = w.name + 'に取られた';
+    $('resMyMs').innerHTML = w.name + ' <span class="msLose">' + (w.ms / 1000).toFixed(3) + '秒</span>';
+    $('resRivalMs').innerHTML = 'あなた <span>' + (myMs != null ? (myMs / 1000).toFixed(3) + '秒（' + (Math.abs(myMs - w.ms) / 1000).toFixed(3) + '秒差）' : '反応なし') + '</span>';
+  }
+  $('resWork').textContent = 'この回の仕事ポイント +' + G.runWorkPt + 'pt（累計 ' + G.workPt + 'pt）';
+  $('resNextBtn').textContent = win ? (lastStage ? 'タイトルへ' : STAGES[G.stage + 1].name + 'と対戦') : 'もう一度挑戦';
+  showResultDelayed(1750);
+}
+function onGrab() {
+  if (G.phase !== 'ring') return;
+  const now = performance.now();
+  G.myMs = now - G.ringStart;
+  G.grabAnim = { who: 'me', t0: now };
+  if (G.rivalWon) { resolve(false, G.myMs); return; }
+  const fastest = Math.min(...G.racers.map(r => r.ms));
+  resolve(G.myMs < fastest, G.myMs);
+}
+function tick(now) {
+  requestAnimationFrame(tick);
+  // work deadline: slack off and the boss scolds you
+  if (G.phase === 'work' && G.taskActive) {
+    const left = TASK_LIMIT - (now - G.taskStart);
+    $('taskBar').style.width = clamp(left / TASK_LIMIT * 100, 0, 100) + '%';
+    $('taskBar').style.background = left < 2000 ? '#d64545' : '#7fb069';
+    if (left <= 0) scold();
+  }
+  // rivals grab when their time comes
+  if (G.phase === 'ring') {
+    const el = now - G.ringStart;
+    for (const r of G.racers) {
+      if (el >= r.ms && !r.grabbedAt) {
+        r.grabbedAt = now; G.grabAnim = { who: r.side, t0: now };
+        if (!G.rivalWon) {
+          G.rivalWon = { name: r.st.name, ms: r.ms };
+          showBubble(r.side);
+          setTimeout(showBossBubble, 550);
+          ringStop(); $('ringBanner').classList.add('hidden');
+          G.loseAt = now + 1200;
+        }
+      }
+    }
+    if (G.rivalWon && now >= G.loseAt) resolve(false, G.myMs);
+  }
+  // grab animations (0..1 over 110ms)
+  const anim = (t0) => t0 ? clamp((now - t0) / 110, 0, 1) : 0;
+  if (G.grabAnim) {
+    const v = anim(G.grabAnim.t0);
+    if (G.grabAnim.who === 'me') G.meGrab = v; else if (G.grabAnim.who === 'left') G.leftGrab = v; else G.rightGrab = v;
+  }
+  if (window.R3D) R3D.frame({
+    t: now / 1000, ring: G.phase === 'ring' ? 1 : 0, ringT: G.phase === 'ring' ? (now - G.ringStart) / 1000 : 0,
+    meGrab: G.meGrab, leftGrab: G.leftGrab, rightGrab: G.rightGrab,
+    leftOn: G.racers.some(r => r.side === 'left'), rightOn: G.racers.some(r => r.side === 'right'),
+    working: G.phase === 'work' ? 1 : 0, stage: G.stage,
+  });
+}
+requestAnimationFrame(tick);
+$('grabBtn').addEventListener('pointerdown', e => { e.preventDefault(); onGrab(); });
+window.addEventListener('resize', () => { if (G.phase === 'ring') positionGrab(); });
+$('startBtn').onclick = () => { ac(); G.stage = Math.min(store.get('phone_progress', 0), STAGES.length - 1); openStage(); };
+$('stageGoBtn').onclick = () => { ac(); beginWork(); };
+$('stageBackBtn').onclick = () => { renderLadder(); showScreen('title'); };
+$('resNextBtn').onclick = () => {
+  if (G.phase !== 'done' || resultLocked()) return;
+  const won = $('resTitle').textContent.includes('勝ち') || $('resTitle').textContent.includes('全制覇');
+  if (won && G.stage < STAGES.length - 1) { G.stage++; openStage(); }
+  else if (won) { renderLadder(); showScreen('title'); }
+  else openStage();
+};
+$('resTitleBtn').onclick = () => { if (resultLocked()) return; renderLadder(); showScreen('title'); };
+$('quitBtn').onclick = () => {
+  submitScore();
+  if (G.ringTO) clearTimeout(G.ringTO); if (G.taskTimer) clearTimeout(G.taskTimer);
+  ringStop(); G.phase = 'idle';
+  $('hud').classList.add('hidden'); $('quitBtn').classList.add('hidden'); $('taskCard').classList.add('hidden'); $('ringBanner').classList.add('hidden'); $('grabBtn').classList.add('hidden');
+  renderLadder(); showScreen('title');
+};
+{
+  const ni = $('nameIn');
+  ni.value = store.get('phone_name', '');
+  ni.addEventListener('input', () => store.set('phone_name', ni.value));
+}
+$('rankBtn').onclick = () => openRank();
+$('rankBackBtn').onclick = () => { renderLadder(); showScreen('title'); };
+$('rankTabPt').onclick = () => { rankMode = 'pt'; renderRank(); };
+$('rankTabMs').onclick = () => { rankMode = 'ms'; renderRank(); };
+renderLadder();
+/* module load watchdog */
+setTimeout(() => { if (!window.R3D) $('loadErr').classList.remove('hidden'); }, 9000);
+</script>
+<script type="module">
+import * as THREE from 'three';
+const holder = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+holder.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9db8c8);
+scene.fog = new THREE.Fog(0x9db8c8, 14, 30);
+const camera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, 0.1, 60);
+camera.position.set(0, 1.66, 2.9);
+camera.lookAt(0, 0.9, -0.3);
+scene.add(new THREE.HemisphereLight(0xeaf2ff, 0x5a5f4a, 0.95));
+const sun = new THREE.DirectionalLight(0xfff2d8, 1.1); sun.position.set(4, 6, 3); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xdfe8ff, 0.35); fill.position.set(-5, 4, -2); scene.add(fill);
+
+function makeTex(w, h, fn) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  fn(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t;
+}
+const M = {
+  deskTop: new THREE.MeshStandardMaterial({ color: 0xb08d5f, roughness: 0.8 }),
+  deskSide: new THREE.MeshStandardMaterial({ color: 0x8a8378, roughness: 0.9 }),
+  plastic: new THREE.MeshStandardMaterial({ color: 0x2f3338, roughness: 0.6 }),
+  plasticLt: new THREE.MeshStandardMaterial({ color: 0x484d54, roughness: 0.6 }),
+  paper: new THREE.MeshStandardMaterial({ color: 0xf7f4ea, roughness: 1 }),
+  metal: new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.4, metalness: 0.6 }),
+};
+function box(w, h, d, mat, x, y, z, parent) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z); (parent || scene).add(m); return m;
+}
+/* ---------- room ---------- */
+{
+  const floorTex = makeTex(256, 256, (g) => {
+    g.fillStyle = '#5d6673'; g.fillRect(0, 0, 256, 256);
+    g.fillStyle = '#555f6b'; g.fillRect(0, 0, 128, 128); g.fillRect(128, 128, 128, 128);
+    g.strokeStyle = 'rgba(0,0,0,.18)'; g.strokeRect(0, 0, 128, 128); g.strokeRect(128, 128, 128, 128); g.strokeRect(128, 0, 128, 128); g.strokeRect(0, 128, 128, 128);
+  });
+  floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping; floorTex.repeat.set(10, 10);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 1 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.z = -2; scene.add(floor);
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0xe8e2d4, roughness: 1 });
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(22, 4.2), wallMat); back.position.set(0, 2.1, -6.5); scene.add(back);
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), new THREE.MeshStandardMaterial({ color: 0xf2f0ea })); ceil.rotation.x = Math.PI / 2; ceil.position.y = 3.6; ceil.position.z = -2; scene.add(ceil);
+  for (const lx of [-4.4, -1.5, 1.5, 4.4]) { const p = box(2.2, 0.04, 1.1, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff6dd, emissiveIntensity: 0.9 }), lx, 3.58, -1.6); }
+  // windows with blinds + skyline
+  const cityTex = makeTex(512, 256, (g, w, h) => {
+    const grad = g.createLinearGradient(0, 0, 0, h); grad.addColorStop(0, '#a8d4f0'); grad.addColorStop(1, '#dceef8'); g.fillStyle = grad; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 26; i++) { const bw = 22 + Math.random() * 40, bh = 60 + Math.random() * 130, bx = Math.random() * w; g.fillStyle = ['#8fa8bc', '#7d97ad', '#a5bccf'][i % 3]; g.fillRect(bx, h - bh, bw, bh); g.fillStyle = 'rgba(255,255,220,.5)'; for (let wy = h - bh + 8; wy < h - 8; wy += 12) for (let wx = bx + 4; wx < bx + bw - 4; wx += 9) if (Math.random() < 0.6) g.fillRect(wx, wy, 4, 5); }
+  });
+  for (const wx of [-4.6, 0, 4.6]) {
+    const win = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.9), new THREE.MeshBasicMaterial({ map: cityTex }));
+    win.position.set(wx, 2.15, -6.48); scene.add(win);
+    box(3.7, 0.07, 0.06, M.metal, wx, 3.13, -6.44); box(3.7, 0.07, 0.06, M.metal, wx, 1.17, -6.44);
+    box(0.07, 2.0, 0.06, M.metal, wx - 1.83, 2.15, -6.44); box(0.07, 2.0, 0.06, M.metal, wx + 1.83, 2.15, -6.44);
+    for (let i = 0; i < 6; i++) box(3.6, 0.035, 0.02, new THREE.MeshStandardMaterial({ color: 0xd8d4c8 }), wx, 3.0 - i * 0.11, -6.42);
+  }
+  // wall clock
+  const clockG = new THREE.Group(); clockG.position.set(2.7, 2.95, -6.42); scene.add(clockG);
+  const face = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.05, 32), new THREE.MeshStandardMaterial({ color: 0xffffff })); face.rotation.x = Math.PI / 2; clockG.add(face);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.025, 8, 32), M.plastic); clockG.add(rim);
+  const hH = box(0.03, 0.19, 0.01, M.plastic, 0, 0.05, 0.035, clockG); hH.geometry.translate(0, 0.07, 0);
+  const hM = box(0.02, 0.27, 0.01, M.plastic, 0, 0.08, 0.04, clockG); hM.geometry.translate(0, 0.1, 0);
+  clockG.userData = { hH, hM };
+  scene.userData.clock = clockG;
+  // whiteboard
+  const boardTex = makeTex(512, 256, (g, w, h) => {
+    g.fillStyle = '#fdfdf8'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#3a6ea5'; g.lineWidth = 3; g.beginPath(); g.moveTo(30, 190); g.lineTo(130, 120); g.lineTo(220, 150); g.lineTo(330, 60); g.stroke();
+    g.fillStyle = '#d64545'; g.font = 'bold 34px sans-serif'; g.fillText('売上目標', 26, 52);
+    g.fillStyle = '#333'; g.font = '24px sans-serif'; g.fillText('電話は1コールで取る！', 200, 52); g.fillText('会議 13:00〜', 30, 100); g.fillText('〆切 金曜', 300, 210);
+  });
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.3), new THREE.MeshStandardMaterial({ map: boardTex }));
+  board.position.set(-3.4, 1.95, -6.46); scene.add(board);
+  // shelves + boxes (right), plants, copier (left)
+  for (let s = 0; s < 3; s++) {
+    box(2.4, 0.05, 0.5, M.deskSide, 6.6, 0.9 + s * 0.75, -4.6);
+    for (let i = 0; i < 5; i++) box(0.32, 0.42, 0.36, new THREE.MeshStandardMaterial({ color: [0xc9a86a, 0x8fa8bc, 0xb08968, 0xa3b18a, 0xdda448][(i + s) % 5] }), 5.7 + i * 0.44, 1.14 + s * 0.75, -4.6);
+  }
+  for (const px of [-6.4, 6.3]) {
+    const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.17, 0.34, 10), new THREE.MeshStandardMaterial({ color: 0xa15c48 })); pot.position.set(px, 0.17, -5.6); scene.add(pot);
+    for (let i = 0; i < 6; i++) { const leaf = box(0.06, 0.55 + Math.random() * 0.3, 0.16, new THREE.MeshStandardMaterial({ color: 0x4d7c4d }), px + (Math.random() - 0.5) * 0.2, 0.6, -5.6 + (Math.random() - 0.5) * 0.2); leaf.rotation.z = (Math.random() - 0.5) * 0.7; }
+  }
+  const copier = box(0.9, 1.0, 0.7, new THREE.MeshStandardMaterial({ color: 0xd8d8d2 }), -3.6, 0.5, -3.2);
+  box(0.8, 0.06, 0.6, M.plasticLt, -3.6, 1.03, -3.2);
+}
+/* ---------- desk builder ---------- */
+const screenTex = makeTex(256, 160, (g, w, h) => {
+  g.fillStyle = '#1d3557'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#f1fa8c'; g.fillRect(14, 12, 100, 16);
+  g.fillStyle = '#a8dadc'; for (let i = 0; i < 6; i++) g.fillRect(14, 42 + i * 18, 228 - (i * 37) % 90, 9);
+  g.fillStyle = '#e63946'; g.fillRect(196, 12, 46, 16);
+});
+const kbTex = makeTex(128, 48, (g, w, h) => { g.fillStyle = '#3a3f45'; g.fillRect(0, 0, w, h); g.fillStyle = '#565d66'; for (let r = 0; r < 4; r++) for (let c = 0; c < 14; c++) g.fillRect(3 + c * 9, 3 + r * 11, 7, 8); });
+const padTex = makeTex(96, 128, (g, w, h) => { g.fillStyle = '#22252a'; g.fillRect(0, 0, w, h); g.fillStyle = '#cfd4da'; g.font = 'bold 15px monospace'; for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) g.fillText(String(r * 3 + c + 1 > 9 ? (r === 3 ? (c === 1 ? '0' : '') : '') : r * 3 + c + 1), 14 + c * 32, 26 + r * 30); });
+function buildPhone(parent, x, z, ry) {
+  const g = new THREE.Group(); g.position.set(x, 0.78, z); g.rotation.y = ry; g.scale.setScalar(1.22); parent.add(g);
+  box(0.26, 0.05, 0.34, M.plastic, 0, 0.025, 0, g);
+  const slope = box(0.24, 0.03, 0.2, M.plasticLt, 0, 0.06, 0.05, g); slope.rotation.x = -0.18;
+  const pad = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 0.2), new THREE.MeshStandardMaterial({ map: padTex }));
+  pad.rotation.x = -Math.PI / 2 - 0.18; pad.position.set(0, 0.078, 0.05); g.add(pad);
+  const recv = new THREE.Group(); recv.position.set(0, 0.1, -0.1); g.add(recv);
+  const bar = box(0.055, 0.045, 0.3, M.plastic, 0, 0, 0, recv);
+  box(0.075, 0.06, 0.07, M.plastic, 0, -0.005, -0.13, recv);
+  box(0.075, 0.06, 0.07, M.plastic, 0, -0.005, 0.13, recv);
+  const lampMat = new THREE.MeshStandardMaterial({ color: 0x551111, emissive: 0xff2222, emissiveIntensity: 0 });
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.018, 10, 10), lampMat); lamp.position.set(0.09, 0.075, -0.12); g.add(lamp);
+  return { group: g, recv, lampMat, basePos: g.position.clone() };
+}
+function buildDesk(parent, x, z, opts) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); parent.add(g);
+  box(1.7, 0.05, 0.8, M.deskTop, 0, 0.75, 0, g);
+  box(1.6, 0.72, 0.06, M.deskSide, 0, 0.37, 0.36, g);
+  box(0.06, 0.72, 0.7, M.deskSide, -0.8, 0.37, 0, g); box(0.06, 0.72, 0.7, M.deskSide, 0.8, 0.37, 0, g);
+  // monitor + keyboard
+  box(0.09, 0.3, 0.05, M.plastic, -0.25, 0.92, -0.18, g);
+  const mon = box(0.62, 0.4, 0.03, M.plastic, -0.25, 1.16, -0.2, g);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.57, 0.35), new THREE.MeshBasicMaterial({ map: screenTex })); scr.position.set(-0.25, 1.16, -0.183); g.add(scr);
+  const kb = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.02, 0.16), new THREE.MeshStandardMaterial({ map: kbTex })); kb.position.set(-0.22, 0.79, 0.12); g.add(kb);
+  // papers, mug, pens, calendar
+  const p1 = box(0.3, 0.008, 0.42, M.paper, 0.28, 0.785, -0.05, g); p1.rotation.y = 0.16;
+  const p2 = box(0.3, 0.008, 0.42, M.paper, 0.3, 0.795, -0.04, g); p2.rotation.y = -0.1;
+  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.1, 12), new THREE.MeshStandardMaterial({ color: opts.mug })); mug.position.set(-0.62, 0.83, 0.05); g.add(mug);
+  const holder2 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.09, 10), M.plasticLt); holder2.position.set(0.68, 0.825, -0.22); g.add(holder2);
+  for (let i = 0; i < 3; i++) { const pen = box(0.012, 0.16, 0.012, new THREE.MeshStandardMaterial({ color: [0xd64545, 0x3a86ff, 0x333333][i] }), 0.66 + i * 0.025, 0.9, -0.22); pen.rotation.z = (i - 1) * 0.16; }
+  const phone = buildPhone(g, opts.phoneX != null ? opts.phoneX : 0.48, opts.phoneZ != null ? opts.phoneZ : 0.08, 0);
+  return { group: g, phone };
+}
+function buildPerson(parent, x, z, suit, skin) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); parent.add(g);
+  const suitMat = new THREE.MeshStandardMaterial({ color: suit, roughness: 0.9 });
+  box(0.46, 0.62, 0.26, suitMat, 0, 1.08, 0.28, g); // torso (seated, leaning slightly)
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 14), new THREE.MeshStandardMaterial({ color: skin, roughness: 0.7 })); head.position.set(0, 1.56, 0.24); g.add(head);
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(0.145, 18, 12, 0, Math.PI * 2, 0, 1.4), new THREE.MeshStandardMaterial({ color: 0x2b2320 })); hair.position.set(0, 1.585, 0.245); g.add(hair);
+  box(0.3, 0.5, 0.02, new THREE.MeshStandardMaterial({ color: 0xf2f0e6 }), 0, 1.12, 0.138, g); // shirt
+  box(0.05, 0.18, 0.02, new THREE.MeshStandardMaterial({ color: 0xd64545 }), 0, 1.22, 0.15, g); // tie
+  box(0.4, 0.1, 0.5, new THREE.MeshStandardMaterial({ color: 0x333a44 }), 0, 0.72, 0.3, g); // lap
+  // chair
+  box(0.5, 0.05, 0.48, M.plastic, 0, 0.62, 0.34, g);
+  box(0.5, 0.6, 0.05, M.plastic, 0, 1.0, 0.6, g);
+  box(0.06, 0.6, 0.06, M.metal, 0, 0.3, 0.34, g);
+  // arms: shoulder groups so the right arm can reach for the phone
+  const armL = new THREE.Group(); armL.position.set(-0.28, 1.32, 0.22); g.add(armL);
+  box(0.09, 0.09, 0.42, suitMat, 0, -0.06, -0.16, armL);
+  const armR = new THREE.Group(); armR.position.set(0.28, 1.32, 0.22); g.add(armR);
+  box(0.09, 0.09, 0.42, suitMat, 0, -0.06, -0.16, armR);
+  const handR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), new THREE.MeshStandardMaterial({ color: skin })); handR.position.set(0, -0.06, -0.38); armR.add(handR);
+  const handL = handR.clone(); handL.position.set(0, -0.06, -0.38); armL.add(handL);
+  return { group: g, armL, armR, suitMat };
+}
+const SUITS = [0x3f7d7a, 0x35507a, 0x27364f, 0x5a4632, 0x1d1d22, 0x4a3520];
+const myDesk = buildDesk(scene, 0, 1.05, { mug: 0x3a86ff, phoneX: 0.36, phoneZ: 0.16 });
+const leftDesk = buildDesk(scene, -1.05, -0.6, { mug: 0xd64545, phoneX: -0.48 });
+leftDesk.group.rotation.y = Math.PI;
+const rightDesk = buildDesk(scene, 2.75, 0.75, { mug: 0x2e933c });
+rightDesk.group.position.set(1.05, 0, -0.6); rightDesk.group.rotation.y = Math.PI;
+const leftPerson = buildPerson(scene, -1.05, -0.6, SUITS[0], 0xf2c9a0);
+leftPerson.group.position.z = -1.17; leftPerson.group.rotation.y = Math.PI;
+const rightPerson = buildPerson(scene, 2.75, 0.75, SUITS[1], 0xe8b98d);
+rightPerson.group.position.set(1.05, 0, -1.17); rightPerson.group.rotation.y = Math.PI;
+/* name plates */
+function plateTex(text) { return makeTex(256, 64, (g, w, h) => { g.fillStyle = '#f5f2e8'; g.fillRect(0, 0, w, h); g.strokeStyle = '#8a7a4f'; g.lineWidth = 4; g.strokeRect(2, 2, w - 4, h - 4); g.fillStyle = '#333'; g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.fillText(text, w / 2, 43); }); }
+const plateL = new THREE.Mesh(new THREE.PlaneGeometry(0.44, 0.11), new THREE.MeshBasicMaterial({ map: plateTex('タナカ') })); plateL.position.set(-1.05, 0.87, -0.13); scene.add(plateL);
+const plateR = plateL.clone(); plateR.position.set(1.05, 0.87, -0.13); scene.add(plateR);
+/* player's own arms */
+const myArmR = new THREE.Group(); myArmR.position.set(0.34, 0.86, 1.78); scene.add(myArmR);
+box(0.09, 0.09, 0.5, new THREE.MeshStandardMaterial({ color: 0x35507a }), 0, 0, -0.2, myArmR);
+const myHand = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), new THREE.MeshStandardMaterial({ color: 0xf2c9a0 })); myHand.position.set(0, 0, -0.46); myArmR.add(myHand);
+const myArmL = new THREE.Group(); myArmL.position.set(-0.34, 0.86, 1.78); scene.add(myArmL);
+box(0.09, 0.09, 0.5, new THREE.MeshStandardMaterial({ color: 0x35507a }), 0, 0, -0.2, myArmL);
+const NAMES = ['タナカ', 'スズキ', 'サトウ', 'ヤマダ', 'オオタ', 'ベル'];
+let lastStage = -1, lastLeft = null, lastRight = null;
+const v3 = new THREE.Vector3();
+function anchor(which) {
+  const d = which === 'me' ? myDesk : which === 'left' ? leftDesk : rightDesk;
+  const v = new THREE.Vector3();
+  d.phone.group.getWorldPosition(v); v.y += 0.42;
+  v.project(camera);
+  return { nx: (v.x + 1) / 2, ny: (1 - v.y) / 2 };
+}
+function phoneScreen() {
+  v3.copy(myDesk.phone.group.position); v3.y += 0.1;
+  myDesk.group.localToWorld ? null : 0;
+  const p = v3.clone(); p.x += 0; // myDesk group at (0,0,1.05): phone world = group pos + local
+  p.set(myDesk.phone.group.position.x + 0, myDesk.phone.group.position.y + 0.1, myDesk.phone.group.position.z + 1.05);
+  p.project(camera);
+  return { nx: (p.x + 1) / 2, ny: (1 - p.y) / 2 };
+}
+function setPerson(person, desk, grab, working, t, side) {
+  // typing bob while working
+  const bob = working ? Math.sin(t * 13 + (side === 'left' ? 0 : 2)) * 0.02 : 0;
+  person.armL.position.y = 1.32 + bob;
+  person.armR.position.y = 1.32 - bob;
+  // reach with the phone-side arm (left rival: his left; right rival: his right)
+  const arm = side === 'left' ? person.armL : person.armR;
+  arm.rotation.x = grab * 0.55;
+  arm.position.z = 0.22 + grab * 0.14;
+  desk.phone.recv.position.y = 0.1 + grab * 0.17;
+  desk.phone.recv.position.z = -0.1 + grab * 0.14;
+  desk.phone.recv.rotation.x = grab * 0.5;
+}
+function ringFx(desk, on, t) {
+  const p = desk.phone;
+  if (on) {
+    p.group.position.x = p.basePos.x + Math.sin(t * 70) * 0.006;
+    p.group.position.z = p.basePos.z + Math.cos(t * 63) * 0.006;
+    p.lampMat.emissiveIntensity = (Math.sin(t * 14) > 0 ? 2.2 : 0.1);
+  } else {
+    p.group.position.x = p.basePos.x; p.group.position.z = p.basePos.z;
+    p.lampMat.emissiveIntensity = 0;
+  }
+}
+function frame(s) {
+  const t = s.t;
+  if (s.stage !== lastStage || s.leftOn !== lastLeft || s.rightOn !== lastRight) {
+    lastStage = s.stage; lastLeft = s.leftOn; lastRight = s.rightOn;
+    leftPerson.suitMat.color.setHex(SUITS[s.stage]);
+    plateL.material.map = plateTex(NAMES[s.stage]); plateL.material.needsUpdate = true;
+    const rIdx = s.stage < 2 ? -1 : s.stage === 4 ? 3 : s.stage - 1;
+    rightPerson.group.visible = rIdx >= 0; rightDesk.group.visible = rIdx >= 0; plateR.visible = rIdx >= 0;
+    if (rIdx >= 0) { rightPerson.suitMat.color.setHex(SUITS[rIdx]); plateR.material.map = plateTex(NAMES[rIdx]); plateR.material.needsUpdate = true; }
+  }
+  ringFx(myDesk, !!s.ring, t);
+  ringFx(leftDesk, !!s.ring && s.leftOn, t);
+  ringFx(rightDesk, !!s.ring && s.rightOn, t);
+  setPerson(leftPerson, leftDesk, s.leftGrab, s.working, t, 'left');
+  setPerson(rightPerson, rightDesk, s.rightGrab, s.working, t, 'right');
+  // my receiver + arm
+  myDesk.phone.recv.position.y = 0.1 + s.meGrab * 0.2;
+  myDesk.phone.recv.position.z = -0.1 + s.meGrab * 0.3;
+  myDesk.phone.recv.rotation.x = s.meGrab * 0.6;
+  myArmR.position.z = 1.78 - s.meGrab * 0.5;
+  myArmR.position.x = 0.34 + s.meGrab * 0.12;
+  myArmR.position.y = 0.86 + s.meGrab * 0.12 + (s.working ? Math.sin(t * 12) * 0.008 : 0);
+  myArmL.position.y = 0.86 + (s.working ? Math.cos(t * 12) * 0.008 : 0);
+  // wall clock (real-ish motion)
+  const ck = scene.userData.clock; if (ck) { ck.userData.hM.rotation.z = -t * 0.02; ck.userData.hH.rotation.z = -t * 0.0017; }
+  camera.position.x = Math.sin(t * 0.4) * 0.02;
+  camera.position.y = 1.66 + Math.sin(t * 0.7) * 0.008;
+  camera.lookAt(0, 0.9, -0.3);
+  renderer.render(scene, camera);
+}
+function resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); }
+addEventListener('resize', resize);
+window.R3D = { frame, phoneScreen, resize, anchor };
+renderer.render(scene, camera);
+</script>
+</body>
+</html>
