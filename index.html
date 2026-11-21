@@ -151,6 +151,7 @@
     <div id="resWork" style="font-size:13.5px;font-weight:800;color:#77875f;margin-bottom:6px"></div>
     <button class="btn main" id="resNextBtn">次へ</button>
     <button class="btn sub" id="resTitleBtn">タイトルへ</button>
+    <button class="btn sub" id="saveImgBtn">📷 リザルト画像を保存</button>
     <a class="btn sub" id="resShareBtn" href="#" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">𝕏 でシェア</a>
   </div>
 </div>
@@ -752,20 +753,6 @@ function buildShareImage(cb) {
   img.onerror = () => cb(null);
   img.src = snap;
 }
-function hookShareImage(anchor) {
-  if (!anchor) return;
-  anchor.addEventListener('click', e => {
-    if (!shareImgData) return;
-    let ok = false;
-    try { ok = !!(navigator.canShare && navigator.canShare({ files: [new File([], 'p.png', { type: 'image/png' })] })); } catch (err) {}
-    if (!ok) return;
-    e.preventDefault();
-    buildShareImage(blob => {
-      if (!blob) { const t = document.createElement('a'); t.href = anchor.href; t.target = '_blank'; t.rel = 'noopener'; document.body.appendChild(t); t.click(); t.remove(); return; }
-      navigator.share({ files: [new File([blob], 'result.png', { type: 'image/png' })], text: shareImgData.text }).catch(() => {});
-    });
-  });
-}
 function resolve(win, myMs) {
   if (G.phase === 'done') return;
   G.phase = 'done'; ringStop();
@@ -884,7 +871,18 @@ $('quitBtn').onclick = () => {
   ni.addEventListener('input', () => store.set('phone_name', ni.value));
 }
 $('rankBtn').onclick = () => openRank();
-hookShareImage($('resShareBtn'));
+function wireSaveImg() {
+  const b = $('saveImgBtn');
+  if (!b) return;
+  b.addEventListener('click', () => {
+    if (!shareImgData) return;
+    buildShareImage(blob => {
+      if (!blob) return;
+      try { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'result.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); } catch (e) {}
+    });
+  });
+}
+wireSaveImg();
 $('rankBackBtn').onclick = () => { renderLadder(); showScreen('title'); };
 $('rankTabPt').onclick = () => { rankMode = 'pt'; renderRank(); };
 $('rankTabMs').onclick = () => { rankMode = 'ms'; renderRank(); };
