@@ -114,7 +114,10 @@
     <div class="lbl">👤 ユーザーネーム</div>
     <div class="nameRow" style="margin-bottom:4px"><div id="nameTitle" style="background:#2b3a55;color:#ffb703;font-weight:900;font-size:13.5px;border-radius:12px;padding:8px 0;text-align:center;margin-bottom:6px">新人</div><input id="nameIn" maxlength="10" placeholder="ユーザーネーム" style="width:100%;padding:11px 13px;border:2px solid #d8dfc8;border-radius:12px;font-size:15px;font-weight:800;font-family:inherit;background:#fff"></div>
     <button class="btn main" id="startBtn">スタート</button>
-    <button class="btn sub" id="rankBtn">🏆 世界ランキング</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn sub" id="howtoBtn" style="flex:1;margin:0">❓ ルール</button>
+      <button class="btn sub" id="rankBtn" style="flex:1;margin:0">🏆 ランキング</button>
+    </div>
     <div id="ladderBox"></div>
     <div id="titleWorkPt" style="font-size:13.5px;font-weight:900;color:#7a6a4f;margin-top:8px"></div>
   </div>
@@ -122,13 +125,26 @@
 
 <div id="screenRank" class="screen hidden">
   <div class="card">
-    <h2 style="margin:2px 0 10px">🏆 世界ランキング</h2>
+    <h2 style="margin:2px 0 10px">🏆 ランキング</h2>
     <div style="display:flex;gap:8px;margin-bottom:10px">
-      <button class="btn main" id="rankTabPt" style="margin:0;padding:10px">📞 ポイント</button>
-      <button class="btn sub" id="rankTabMs" style="margin:0;padding:10px">⚡ スピード</button>
+      <button class="btn main" id="rankTabMs" style="margin:0;padding:10px">⚡ スピード</button>
+      <button class="btn sub" id="rankTabPt" style="margin:0;padding:10px">📞 ポイント</button>
     </div>
+    <div id="rankDivBox" style="display:none;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px"></div>
     <div id="rankList" style="text-align:left;font-size:14px;font-weight:800;color:#44543a">読み込み中…</div>
     <button class="btn sub" id="rankBackBtn">タイトルへ</button>
+  </div>
+</div>
+
+<div id="screenHowto" class="screen hidden">
+  <div class="card">
+    <h2 style="margin:2px 0 10px">❓ ルール</h2>
+    <div style="text-align:left;font-size:16px;font-weight:900;color:#2f4423;line-height:1.7">
+      <div>📞 電話が鳴ったら、誰より早く取れ</div>
+      <div>💼 ただし仕事もちゃんとこなせ</div>
+      <div>⚡ 勝つと相手はもっと速くなる</div>
+    </div>
+    <button class="btn sub" id="howtoBackBtn">タイトルへ</button>
   </div>
 </div>
 
@@ -219,12 +235,12 @@ function racersFor(stage) {
 }
 const G = {
   screen: 'title', stage: store.get('phone_progress', 0), phase: 'idle', // idle|work|ring|done
-  workPt: store.get('phone_workpt', 0), bestMs: store.get('phone_bestms', 0), runWorkPt: 0, ringAt: 0, ringStart: 0, myMs: null, racers: [], taskTimer: null, ringTO: null, scolds: 0, taskStart: 0, taskActive: false,
+  workPt: store.get('phone_workpt', 0), bestMs: store.get('phone_bestms', 0), stageBest: (() => { const v = store.get('phone_stagebest', null); return Array.isArray(v) && v.length === 6 ? v : [0, 0, 0, 0, 0, 0]; })(), runWorkPt: 0, ringAt: 0, ringStart: 0, myMs: null, racers: [], taskTimer: null, ringTO: null, scolds: 0, taskStart: 0, taskActive: false,
   meGrab: 0, leftGrab: 0, rightGrab: 0, grabAnim: null, result: null, rivalWon: null, loseAt: 0, resultAt: 0,
 };
 function showScreen(name) {
   G.screen = name || 'none';
-  for (const [id, key] of [['screenTitle', 'title'], ['screenStage', 'stage'], ['screenResult', 'result'], ['screenRank', 'rank']]) $(id).classList.toggle('hidden', name !== key);
+  for (const [id, key] of [['screenTitle', 'title'], ['screenStage', 'stage'], ['screenResult', 'result'], ['screenRank', 'rank'], ['screenHowto', 'howto']]) $(id).classList.toggle('hidden', name !== key);
   if (name) { $('hud').classList.add('hidden'); $('quitBtn').classList.add('hidden'); }
 }
 function renderLadder() {
@@ -434,7 +450,7 @@ function nextTask() {
   });
 }
 /* ================= SCOLD (サボると怒られる) ================= */
-const TASK_LIMIT = 7000;
+function taskLimit() { return Math.max(5000, 7000 - G.stage * 500); }
 function updScoldInfo() { $('scoldInfo').textContent = ''; }
 function scold() {
   G.taskActive = false; G.scolds++;
@@ -455,17 +471,24 @@ function showPromoIfAny() {
     $('resPromo').style.display = '';
   } else $('resPromo').style.display = 'none';
 }
+const PHONE_FAIL_LINES = [
+  '電話はかける人が<br>いないと鳴らない',
+  '誰も鳴らして<br>ないのに受話器を<br>上げてしまった。',
+  '鳴ってもいないのに、<br>反射で取って<br>しまった。',
+  '静かなオフィスに、<br>受話器を上げる<br>音だけ響いた。',
+  '幻聴だった。<br>みんなの視線が痛い。',
+];
 function failByScold(reason) {
   if (G.ringTO) clearTimeout(G.ringTO); if (G.taskTimer) clearTimeout(G.taskTimer);
   G.phase = 'done'; ringStop();
   $('taskCard').classList.add('hidden'); $('ringBanner').classList.add('hidden'); $('grabBtn').classList.add('hidden'); $('phoneHit').classList.add('hidden');
   sfx.lose();
   $('resEmoji').textContent = '💢';
-  $('resTitle').textContent = reason === 'mistake' ? 'ミスして失敗…' : reason === 'phone' ? '鳴ってない電話を取って失敗…' : 'サボって失敗…';
+  $('resTitle').innerHTML = reason === 'mistake' ? '仕事を間違えて<br>しまった' : reason === 'phone' ? '鳴っていない電話を<br>取ってしまった' : 'サボって失敗…';
   $('resComment').textContent = '';
-  $('resMyMs').innerHTML = reason === 'mistake' ? (G.failMsg || 'タスクの答えをミスった') : reason === 'phone' ? '電話は鳴っていなかった' : 'タスクを1個サボった';
+  $('resMyMs').innerHTML = reason === 'mistake' ? (G.failMsg || 'タスクの答えをミスった') : reason === 'phone' ? PHONE_FAIL_LINES[Math.floor(Math.random() * PHONE_FAIL_LINES.length)] : 'タスクを1個サボった';
   $('resRivalMs').innerHTML = ''; $('resVs').style.display = 'none';
-  $('resWork').textContent = '仕事は制限時間内に終わらせよう（この回の仕事ポイント ' + G.runWorkPt + 'pt）';
+  $('resWork').innerHTML = '仕事は制限時間内に終わらせよう<br>（この回の仕事ポイント ' + G.runWorkPt + 'pt）';
   $('resNextBtn').textContent = 'もう一度挑戦';
   setShare(reason === 'mistake' ? '📞 『出世街道は電話番から』 ' + (G.failMsg || 'タスクをミスった') + '… 電話を取る前に仕事で失敗' : reason === 'phone' ? '📞 『出世街道は電話番から』 鳴っていない電話を取って怒られた…' : '📞 『出世街道は電話番から』 仕事をサボって怒られた…');
   submitScore();
@@ -577,16 +600,21 @@ function sheetLoad(id) {
     .catch(() => null);
 }
 function fmtDate(d) { return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+function msVector() { return G.stageBest.map(v => v || '').join(','); }
 function submitScore() {
   if (RANK_FORM === 'PENDING_FORM') return;
-  const subPt = store.get('phone_sub_pt', 0), subMs = store.get('phone_sub_ms', 0);
-  const betterPt = G.workPt > subPt, betterMs = G.bestMs > 0 && (!subMs || G.bestMs < subMs);
-  if (!betterPt && !betterMs) return;
-  formPost(RANK_FORM, RANK_ENT, { name: myName(), pt: G.workPt, pid: phonePid(), date: fmtDate(new Date()), ms: G.bestMs || '' });
-  store.set('phone_sub_pt', Math.max(subPt, G.workPt));
-  if (G.bestMs) store.set('phone_sub_ms', subMs ? Math.min(subMs, G.bestMs) : G.bestMs);
+  const subPt = store.get('phone_sub_pt', 0), subVec = store.get('phone_sub_vec', '');
+  const vec = msVector(), hasVec = G.stageBest.some(v => v > 0);
+  const betterVec = hasVec && vec !== subVec;
+  const delta = G.workPt - subPt;
+  if (!betterVec && delta === 0) return;
+  formPost(RANK_FORM, RANK_ENT, { name: myName(), pt: delta, pid: phonePid(), date: fmtDate(new Date()), ms: hasVec ? vec : (G.bestMs || '') });
+  store.set('phone_sub_pt', G.workPt);
+  if (betterVec) store.set('phone_sub_vec', vec);
 }
-let rankMode = 'pt', rankRows = null;
+let rankMode = 'ms', rankRows = null, rankDiv = 0;
+const DIVS = ['同期の部', '先輩の部', '課長の部', '部長の部', '社長の部', '？？？の部'];
+function divUnlocked() { return store.get('phone_progress', 0) >= 5 || G.stageBest[5] > 0; }
 async function openRank() {
   showScreen('rank');
   $('rankList').textContent = '読み込み中…';
@@ -597,25 +625,31 @@ async function openRank() {
 function renderRank() {
   $('rankTabPt').className = 'btn ' + (rankMode === 'pt' ? 'main' : 'sub');
   $('rankTabMs').className = 'btn ' + (rankMode === 'ms' ? 'main' : 'sub');
+  $('rankDivBox').style.display = rankMode === 'ms' ? 'grid' : 'none';
+  for (const b of $('rankDivBox').children) {
+    const d = +b.dataset.div;
+    if (d === 5) b.textContent = divUnlocked() ? 'ベルの部' : '？？？の部';
+    b.className = 'btn ' + (rankMode === 'ms' && d === rankDiv ? 'main' : 'sub');
+  }
   const el = $('rankList');
   if (!rankRows) { el.textContent = '読み込めませんでした'; return; }
   const byPid = {};
   for (const r of rankRows) {
-    const name = r[1], pt = parseInt(r[2], 10), pid = r[3], ms = parseInt(r[5], 10);
+    const name = r[1], pt = parseInt(r[2], 10), pid = r[3], rawMs = r[5];
     if (!pid) continue;
-    const cur = byPid[pid] || (byPid[pid] = { name: '', pt: 0, ms: 0 });
+    const cur = byPid[pid] || (byPid[pid] = { name: '', pt: 0, ms: [0, 0, 0, 0, 0, 0] });
     if (name) cur.name = name;
-    if (!isNaN(pt)) cur.pt = Math.max(cur.pt, pt);
-    if (!isNaN(ms) && ms > 0) cur.ms = cur.ms ? Math.min(cur.ms, ms) : ms;
+    if (!isNaN(pt)) cur.pt += pt;
+    if (rawMs && rawMs.includes(',')) rawMs.split(',').forEach((s, i) => { const v = parseInt(s, 10); if (!isNaN(v) && v > 0 && i < 6) cur.ms[i] = cur.ms[i] ? Math.min(cur.ms[i], v) : v; });
   }
   let list = Object.entries(byPid).map(([pid, v]) => ({ pid, ...v }));
-  list = rankMode === 'pt' ? list.filter(v => v.pt > 0).sort((a, b) => b.pt - a.pt) : list.filter(v => v.ms > 0).sort((a, b) => a.ms - b.ms);
+  list = rankMode === 'pt' ? list.filter(v => v.pt > 0).sort((a, b) => b.pt - a.pt) : list.filter(v => v.ms[rankDiv] > 0).sort((a, b) => a.ms[rankDiv] - b.ms[rankDiv]);
   list = list.slice(0, 20);
   if (!list.length) { el.textContent = 'まだ記録がありません'; return; }
   const me = phonePid();
   el.innerHTML = list.map((v, i) => {
     const nm = cleanName(v.name, 'NONAME') || 'NONAME';
-    const val = rankMode === 'pt' ? v.pt + ' pt' : (v.ms / 1000).toFixed(3) + '秒';
+    const val = rankMode === 'pt' ? v.pt + ' pt' : (v.ms[rankDiv] / 1000).toFixed(3) + '秒';
     return '<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 4px;border-bottom:1px dashed #dde4cd;' + (v.pid === me ? 'color:#b45309' : '') + '"><span>' + (i + 1) + '位 ' + titleFor(v.pt).name + ' ' + nm + '</span><span>' + val + '</span></div>';
   }).join('');
 }
@@ -760,7 +794,11 @@ function resolve(win, myMs) {
   const fastest = Math.min(...G.racers.map(r => r.ms));
   if (win) { sfx.pickup(); setTimeout(() => sfx.win(), 120); showBubble('me'); if (praiseTimer) clearTimeout(praiseTimer); praiseTimer = setTimeout(showPraiseBubble, 1300); } else sfx.lose();
   if (win && G.stage >= store.get('phone_progress', 0)) store.set('phone_progress', Math.min(STAGES.length, G.stage + 1));
-  if (win && myMs != null && (!G.bestMs || myMs < G.bestMs)) { G.bestMs = Math.round(myMs); store.set('phone_bestms', G.bestMs); }
+  if (win && myMs != null) {
+    const m = Math.round(myMs);
+    if (!G.bestMs || m < G.bestMs) { G.bestMs = m; store.set('phone_bestms', G.bestMs); }
+    if (!G.stageBest[G.stage] || m < G.stageBest[G.stage]) { G.stageBest[G.stage] = m; store.set('phone_stagebest', G.stageBest); }
+  }
   let bonusApplied = false;
   if (win && G.runWorkPt > 0) { G.workPt += G.runWorkPt; G.runWorkPt *= 2; bonusApplied = true; store.set('phone_workpt', G.workPt); }
   submitScore();
@@ -801,8 +839,9 @@ function tick(now) {
   requestAnimationFrame(tick);
   // work deadline: slack off and the boss scolds you
   if (G.phase === 'work' && G.taskActive) {
-    const left = TASK_LIMIT - (now - G.taskStart);
-    $('taskBar').style.width = clamp(left / TASK_LIMIT * 100, 0, 100) + '%';
+    const lim = taskLimit();
+    const left = lim - (now - G.taskStart);
+    $('taskBar').style.width = clamp(left / lim * 100, 0, 100) + '%';
     $('taskBar').style.background = left < 2000 ? '#d64545' : '#7fb069';
     if (left <= 0) scold();
   }
@@ -871,6 +910,8 @@ $('quitBtn').onclick = () => {
   ni.addEventListener('input', () => store.set('phone_name', ni.value));
 }
 $('rankBtn').onclick = () => openRank();
+$('howtoBtn').onclick = () => showScreen('howto');
+$('howtoBackBtn').onclick = () => { renderLadder(); showScreen('title'); };
 function wireImgShare() {
   const b = $('imgShareBtn');
   if (!b) return;
@@ -892,6 +933,14 @@ wireImgShare();
 $('rankBackBtn').onclick = () => { renderLadder(); showScreen('title'); };
 $('rankTabPt').onclick = () => { rankMode = 'pt'; renderRank(); };
 $('rankTabMs').onclick = () => { rankMode = 'ms'; renderRank(); };
+DIVS.forEach((label, i) => {
+  const b = document.createElement('button');
+  b.textContent = label; b.dataset.div = i;
+  b.style.cssText = 'margin:0;padding:9px 2px;font-size:13px';
+  b.className = 'btn ' + (i === rankDiv ? 'main' : 'sub');
+  b.onclick = () => { rankDiv = i; renderRank(); };
+  $('rankDivBox').appendChild(b);
+});
 renderLadder();
 /* module load watchdog */
 setTimeout(() => { if (!window.R3D) $('loadErr').classList.remove('hidden'); }, 9000);
