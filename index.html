@@ -665,7 +665,7 @@ function beginWork() {
   $('resComment').textContent = ''; $('bubble').classList.remove('show'); $('scoldBubble').classList.remove('show'); $('praiseBubble').classList.remove('show'); if (praiseTimer) clearTimeout(praiseTimer); G.meGrab = 0; G.leftGrab = 0; G.rightGrab = 0; G.result = null;
   G.racers = racersFor(G.stage).map(r => ({ ...r, ms: Math.max(120, r.st.ms + (Math.random() * 110 - 55)), grabbedAt: null }));
   $('stagePill').textContent = STAGES[G.stage].name + ' 戦';
-  $('hud').classList.remove('hidden'); $('quitBtn').classList.remove('hidden'); $('taskCard').classList.remove('hidden');
+  $('hud').classList.remove('hidden'); $('quitBtn').classList.remove('hidden'); $('taskCard').classList.remove('hidden'); $('taskCard').style.pointerEvents = '';
   positionPhoneHit(); $('phoneHit').classList.remove('hidden');
   taskSeq++; nextTask();
   const wait = 6000 + Math.random() * 7000;
@@ -675,6 +675,7 @@ function fireRing() {
   if (G.phase !== 'work') return;
   G.phase = 'ring'; G.ringStart = performance.now();
   taskSeq++; if (G.taskTimer) clearTimeout(G.taskTimer);
+  $('taskCard').style.pointerEvents = 'none';
   $('phoneHit').classList.add('hidden');
   $('ringBanner').classList.remove('hidden');
   positionGrab(); $('grabBtn').classList.remove('hidden');
