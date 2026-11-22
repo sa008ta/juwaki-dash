@@ -781,7 +781,21 @@ function buildShareImage(cb) {
       c.fillStyle = '#ffd94d'; c.font = '900 56px sans-serif';
       c.fillText(d.title, S / 2, S * 0.665);
       c.fillStyle = '#ffffff';
-      d.lines.forEach((ln, i) => { c.font = (i === 0 ? '900 62px' : '700 46px') + ' sans-serif'; c.fillText(ln, S / 2, S * 0.665 + 88 + i * 68); });
+      const wrapped = [];
+      d.lines.forEach((ln, li) => {
+        c.font = (li === 0 ? '900 62px' : '700 46px') + ' sans-serif';
+        let cur = '';
+        for (const ch of ln) {
+          if (cur && c.measureText(cur + ch).width > S - 90) {
+            let cut = cur.length;
+            for (const p of ['！', '…', '。', ' ']) { const j = cur.lastIndexOf(p); if (j > cur.length * 0.35 && j + 1 < cut) cut = j + 1; }
+            wrapped.push({ t: cur.slice(0, cut), li });
+            cur = cur.slice(cut) + ch;
+          } else cur += ch;
+        }
+        if (cur) wrapped.push({ t: cur, li });
+      });
+      wrapped.forEach((w, i) => { c.font = (i === 0 ? '900 62px' : '700 50px') + ' sans-serif'; c.fillText(w.t, S / 2, S * 0.665 + 88 + i * 68); });
       out.toBlob(b => cb(b), 'image/png');
     } catch (e) { cb(null); }
   };
