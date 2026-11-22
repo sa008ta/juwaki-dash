@@ -490,7 +490,7 @@ function failByScold(reason) {
   $('resRivalMs').innerHTML = ''; $('resVs').style.display = 'none';
   $('resWork').innerHTML = '仕事は制限時間内に終わらせよう<br>（この回の仕事ポイント ' + G.runWorkPt + 'pt）';
   $('resNextBtn').textContent = 'もう一度挑戦';
-  setShare(reason === 'mistake' ? '📞 『出世街道は電話番から』 ' + (G.failMsg || 'タスクをミスった') + '… 電話を取る前に仕事で失敗' : reason === 'phone' ? '📞 『出世街道は電話番から』 鳴っていない電話を取って怒られた…' : '📞 『出世街道は電話番から』 仕事をサボって怒られた…');
+  setShare(reason === 'mistake' ? '📞 『出世街道は電話番から』\n' + (G.failMsg || 'タスクをミスった') + '… 電話を取る前に仕事で失敗' : reason === 'phone' ? '📞 『出世街道は電話番から』\n鳴っていない電話を取って怒られた…' : '📞 『出世街道は電話番から』\n仕事をサボって怒られた…');
   submitScore();
   showPromoIfAny();
   showResultDelayed(reason === 'phone' ? 2100 : 1100);
@@ -757,7 +757,7 @@ function showScoldBubble(line) {
 }
 function setShare(text) {
   $('resShareBtn').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text + '\n#出世街道は電話番から #ブラウザゲーム #インディーゲーム\nhttps://sa008ta.github.io/juwaki-dash/');
-  shareImgData = { text: text + '\n#出世街道は電話番から #ブラウザゲーム #インディーゲーム\nhttps://sa008ta.github.io/juwaki-dash/', title: '出世街道は電話番から', lines: [text.replace(/^📞 『出世街道は電話番から』 /, '')] };
+  shareImgData = { text: text + '\n#出世街道は電話番から #ブラウザゲーム #インディーゲーム\nhttps://sa008ta.github.io/juwaki-dash/', title: '出世街道は電話番から', lines: [text.replace(/^📞 『出世街道は電話番から』\n/, '')] };
 }
 /* ---------- result share with a square image ---------- */
 let shareImgData = null;
@@ -811,7 +811,7 @@ function resolve(win, myMs) {
     $('resTitle').textContent = lastStage ? '全制覇！電話の発明者超え！' : '勝ち！ ' + STAGES[G.stage].name + ' 制覇';
     $('resMyMs').innerHTML = 'あなた <span class="msWin">' + (myMs / 1000).toFixed(3) + '秒</span>';
     $('resRivalMs').innerHTML = '相手 <span>' + (fastest / 1000).toFixed(3) + '秒</span>';
-    setShare('📞 『出世街道は電話番から』 ' + STAGES[G.stage].name + 'に勝った！ 受話器まで ' + (myMs / 1000).toFixed(3) + '秒');
+    setShare('📞 『出世街道は電話番から』\n' + STAGES[G.stage].name + 'に勝った！ 受話器まで ' + (myMs / 1000).toFixed(3) + '秒');
   } else {
     const w = G.rivalWon || { name: STAGES[G.stage].name, ms: fastest };
     $('resComment').style.color = '#b3543f';
@@ -819,7 +819,7 @@ function resolve(win, myMs) {
     $('resTitle').textContent = w.name + 'に取られた';
     $('resMyMs').innerHTML = w.name + ' <span class="msLose">' + (w.ms / 1000).toFixed(3) + '秒</span>';
     $('resRivalMs').innerHTML = 'あなた <span>' + (myMs != null ? (myMs / 1000).toFixed(3) + '秒（' + (Math.abs(myMs - w.ms) / 1000).toFixed(3) + '秒差）' : '反応なし') + '</span>';
-    setShare('📞 『出世街道は電話番から』 ' + w.name + 'に取られた… 受話器まで ' + (myMs != null ? (myMs / 1000).toFixed(3) + '秒。あと ' + (Math.abs(myMs - w.ms) / 1000).toFixed(3) + '秒だった' : '反応できなかった'));
+    setShare('📞 『出世街道は電話番から』\n' + w.name + 'に取られた… 受話器まで ' + (myMs != null ? (myMs / 1000).toFixed(3) + '秒。あと ' + (Math.abs(myMs - w.ms) / 1000).toFixed(3) + '秒だった' : '反応できなかった'));
   }
   $('resWork').textContent = 'この回の仕事ポイント +' + G.runWorkPt + 'pt' + (bonusApplied ? '（📞成功ボーナス2倍！）' : '') + '（累計 ' + G.workPt + 'pt）';
   $('resNextBtn').textContent = win ? (lastStage ? 'タイトルへ' : STAGES[G.stage + 1].name + 'と対戦') : 'もう一度挑戦';
