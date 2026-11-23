@@ -591,7 +591,7 @@ const RANK_SHEET = '1jS-j9LjovpVyDS14MEZ9NE6NaQD5n_M4coEYC7q15SA';
 function formPost(url, ent, vals) {
   const b = new URLSearchParams();
   for (const k in ent) b.append(ent[k], vals[k] == null ? '' : '' + vals[k]);
-  fetch(url, { method: 'POST', mode: 'no-cors', body: b }).catch(() => {});
+  fetch(url, { method: 'POST', mode: 'no-cors', body: b, keepalive: true }).catch(() => {});
 }
 function sheetLoad(id) {
   return fetch('https://docs.google.com/spreadsheets/d/' + id + '/gviz/tq?tqx=out:json&headers=1&_=' + Date.now())
@@ -620,6 +620,20 @@ async function openRank() {
   $('rankList').textContent = '読み込み中…';
   const rows = RANK_SHEET === 'PENDING_SHEET' ? null : await sheetLoad(RANK_SHEET);
   rankRows = rows;
+  // 送信ロスト時の再送（シート照合：pt合計とmsベクトルが端末記録に届いていなければ差分を送る）
+  if (rows && RANK_FORM !== 'PENDING_FORM') {
+    const me = phonePid();
+    let sum = 0; const sheetMs = [0, 0, 0, 0, 0, 0];
+    for (const r of rows) {
+      if (r[3] !== me) continue;
+      const pt = parseInt(r[2], 10); if (!isNaN(pt)) sum += pt;
+      const rawMs = r[5];
+      if (rawMs && rawMs.includes(',')) rawMs.split(',').forEach((s, i) => { const v = parseInt(s, 10); if (!isNaN(v) && v > 0 && i < 6) sheetMs[i] = sheetMs[i] ? Math.min(sheetMs[i], v) : v; });
+    }
+    const subPt = +store.get('phone_sub_pt', 0) || 0;
+    const vecMiss = G.stageBest.some((v, i) => v > 0 && sheetMs[i] !== v);
+    if (sum < subPt || vecMiss) formPost(RANK_FORM, RANK_ENT, { name: myName(), pt: Math.max(0, subPt - sum), pid: me, date: fmtDate(new Date()), ms: msVector() });
+  }
   renderRank();
 }
 function renderRank() {
